@@ -1,0 +1,29 @@
+[
+  {
+    "id": "doc-001",
+    "title": "TCC - A memória afetiva nas colagens de Marina Alves",
+    "owner": "Marina Alves",
+    "license": "CC BY-NC 4.0",
+    "file": "docs/tcc-marina-alves.pdf",
+    "year": 2026,
+    "description": "Estudo sobre memória afetiva e colagem, vinculado ao projeto de conclusão de curso."
+  },
+  {
+    "id": "doc-002",
+    "title": "TCC - Corpo e ruído: a fotografia de João Pedro",
+    "owner": "João Pedro",
+    "license": "Todos os direitos reservados",
+    "file": "docs/tcc-joao-pedro.pdf",
+    "year": 2026,
+    "description": "Investigação sobre corpo e silêncio no espaço urbano através da fotografia."
+  },
+  {
+    "id": "doc-003",
+    "title": "TCC - Diários visuais: texto e imagem em Lívia Martins",
+    "owner": "Lívia Martins",
+    "license": "CC BY-SA 4.0",
+    "file": "docs/tcc-livia-martins.pdf",
+    "year": 2025,
+    "description": "Exploração da relação entre texto e imagem por meio de colagens e materiais encontrados."
+  }
+]
