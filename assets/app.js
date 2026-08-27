@@ -8,6 +8,7 @@ async function loadData(){
     state.artists=await a.json();
     renderArts(state.arts);
     renderArtists(state.artists);
+    initHeroCarousel(state.arts);
   }catch(e){console.error("Abra o projeto por um servidor local (ex.: Live Server).",e)}
 }
 
@@ -99,6 +100,44 @@ function closeProfile(){
   const profile=document.querySelector("#artist-profile");
   profile.classList.remove("show");
   document.body.style.overflow="";
+}
+
+let heroIndex=0;
+let heroItems=[];
+
+function initHeroCarousel(items){
+  heroItems=items.slice(0,3);
+  if(!heroItems.length)return;
+  const container=document.querySelector("#hero-carousel");
+  container.innerHTML=heroItems.map((x,i)=>`
+    <div class="fan-card ${i===0?"active":i===1?"next":"hidden-right"}" data-index="${i}">
+      <img src="${x.image}" alt="${x.title}" loading="lazy">
+      <div class="fan-caption"><span>${String(i+1).padStart(2,"0")} / ${String(heroItems.length).padStart(2,"0")}</span><b>${x.title}</b><small>${x.artist} · ${x.year}</small></div>
+    </div>`).join("");
+
+  container.querySelectorAll(".fan-card").forEach(card=>{
+    card.addEventListener("click",()=>{
+      const idx=parseInt(card.dataset.index);
+      goToHeroSlide(idx);
+    });
+  });
+
+  document.getElementById("fan-prev").addEventListener("click",()=>goToHeroSlide((heroIndex-1+heroItems.length)%heroItems.length));
+  document.getElementById("fan-next").addEventListener("click",()=>goToHeroSlide((heroIndex+1)%heroItems.length));
+}
+
+function goToHeroSlide(idx){
+  if(!heroItems.length)return;
+  heroIndex=idx;
+  const cards=document.querySelectorAll(".fan-card");
+  cards.forEach((c,i)=>{
+    c.className="fan-card";
+    if(i===heroIndex) c.classList.add("active");
+    else if(i===heroIndex-1 || (heroIndex===0 && i===heroItems.length-1)) c.classList.add("prev");
+    else if(i===heroIndex+1 || (heroIndex===heroItems.length-1 && i===0)) c.classList.add("next");
+    else if(i<heroIndex) c.classList.add("hidden-left");
+    else c.classList.add("hidden-right");
+  });
 }
 
 loadData();
