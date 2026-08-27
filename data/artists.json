@@ -1,0 +1,44 @@
+[
+  {
+    "name": "Marina Alves",
+    "course": "Artes Visuais · 3º período",
+    "bio": "Marina investiga as camadas da memória afetiva através de técnicas mistas e colagem. Seu trabalho transita entre o registro documental e a abstração poética, buscando nos vestígios do cotidiano novas narrativas visuais.",
+    "image": "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=600&h=600&fit=crop&crop=face",
+    "works": ["Vestígio", "Depois da Chuva"]
+  },
+  {
+    "name": "João Pedro",
+    "course": "Artes Visuais · 4º período",
+    "bio": "João Pedro constrói imagens a partir da observação do corpo em movimento e dos silêncios do espaço urbano. Sua fotografia busca capturar o instante em que o visível começa a se desfazer.",
+    "image": "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=600&h=600&fit=crop&crop=face",
+    "works": ["Corpo / Ruído", "Quase Paisagem"]
+  },
+  {
+    "name": "Lívia Martins",
+    "course": "Artes Visuais · 2º período",
+    "bio": "Lívia explora a relação entre texto e imagem, propondo colagens que funcionam como diários visuais. Sua prática experimental se alimenta de materiais encontrados, envelopes, recortes e anotações à mão.",
+    "image": "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=600&h=600&fit=crop&crop=face",
+    "works": ["Entrelinhas", "Matéria I"]
+  },
+  {
+    "name": "Caio Ferreira",
+    "course": "Artes Visuais · 5º período",
+    "bio": "Caio trabalha com a materialidade da tinta e a tensão entre gesto e controle. Suas pinturas investigam a superfície como território de disputa entre acaso e intenção.",
+    "image": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=600&h=600&fit=crop&crop=face",
+    "works": ["Matéria I"]
+  },
+  {
+    "name": "Ana Clara",
+    "course": "Artes Visuais · 3º período",
+    "bio": "Ana Clara utiliza a fotografia como ferramenta de escuta do entorno. Seus projetos documentam paisagens afetivas e modos de habitar o espaço público no campus e na cidade.",
+    "image": "https://images.unsplash.com/photo-1517841905240-472988babdf9?w=600&h=600&fit=crop&crop=face",
+    "works": ["Depois da Chuva", "Quase Paisagem"]
+  },
+  {
+    "name": "Rafael Lima",
+    "course": "Artes Visuais · 6º período",
+    "bio": "Rafael articula desenho, vídeo e instalação em pesquisas sobre território e identidade. Seu trabalho propõe deslocamentos perceptivos a partir de arquivos pessoais e memórias coletivas.",
+    "image": "https://images.unsplash.com/photo-1506794778202-cad84cf45f05?w=600&h=600&fit=crop&crop=face",
+    "works": ["Entrelinhas", "Corpo / Ruído"]
+  }
+]

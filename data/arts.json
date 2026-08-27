@@ -1,0 +1,56 @@
+[
+  {
+    "title": "Vestígio",
+    "artist": "Marina Alves",
+    "year": 2026,
+    "technique": "Técnica mista",
+    "theme": "Memória",
+    "category": "visual",
+    "image": "https://images.unsplash.com/photo-1515405295579-ba7b45403062?auto=format&fit=crop&w=900&q=80"
+  },
+  {
+    "title": "Entrelinhas",
+    "artist": "João Pedro",
+    "year": 2026,
+    "technique": "Fotografia",
+    "theme": "Cotidiano",
+    "category": "foto",
+    "image": "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=900&q=80"
+  },
+  {
+    "title": "Corpo / Ruído",
+    "artist": "Lívia Martins",
+    "year": 2026,
+    "technique": "Acrílica",
+    "theme": "Corpo",
+    "category": "pintura",
+    "image": "https://images.unsplash.com/photo-1460661419201-fd4cecdf8a8b?auto=format&fit=crop&w=900&q=80"
+  },
+  {
+    "title": "Quase Paisagem",
+    "artist": "Caio Ferreira",
+    "year": 2026,
+    "technique": "Colagem",
+    "theme": "Lugar",
+    "category": "visual",
+    "image": "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=900&q=80"
+  },
+  {
+    "title": "Depois da Chuva",
+    "artist": "Ana Clara",
+    "year": 2026,
+    "technique": "Fotografia",
+    "theme": "Natureza",
+    "category": "foto",
+    "image": "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=900&q=80"
+  },
+  {
+    "title": "Matéria I",
+    "artist": "Rafael Lima",
+    "year": 2026,
+    "technique": "Óleo sobre tela",
+    "theme": "Experimentação",
+    "category": "pintura",
+    "image": "https://images.unsplash.com/photo-1517048676732-d65bc937f952?auto=format&fit=crop&w=900&q=80"
+  }
+]

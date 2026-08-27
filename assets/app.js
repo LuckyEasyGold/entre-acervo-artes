@@ -1,0 +1,104 @@
+const state={arts:[],artists:[]};
+
+async function loadData(){
+  try{
+    const r=await fetch("data/arts.json");
+    state.arts=await r.json();
+    const a=await fetch("data/artists.json");
+    state.artists=await a.json();
+    renderArts(state.arts);
+    renderArtists(state.artists);
+  }catch(e){console.error("Abra o projeto por um servidor local (ex.: Live Server).",e)}
+}
+
+function renderArts(items){
+  document.querySelector("#art-grid").innerHTML=items.map((x,i)=>`
+    <article class="work" data-category="${x.category}">
+      <div class="visual"><img src="${x.image}" alt="${x.title}" loading="lazy"></div>
+      <div class="work-info"><div><div class="work-title">${x.title}</div><small>${x.artist} · ${x.year}</small></div><div class="work-meta">${x.technique}<br>${x.theme}</div></div>
+    </article>`).join("");
+}
+
+function renderArtists(items){
+  document.querySelector("#artist-list").innerHTML=items.map((x,i)=>`
+   <a class="artist" href="#">
+    <span class="artist-num">${String(i+1).padStart(2,"0")}</span>
+    <span class="artist-name">${x.name}</span>
+    <span class="artist-course">${x.course}</span>
+    <span class="artist-link">Ver perfil ↗</span>
+   </a>`).join("");
+}
+
+function showArtistProfile(artist){
+  const profile=document.querySelector("#artist-profile");
+  document.getElementById("profile-img").src=artist.image;
+  document.getElementById("profile-img").alt=artist.name;
+  document.getElementById("profile-name").textContent=artist.name;
+  document.getElementById("profile-course").textContent=artist.course;
+  document.getElementById("profile-bio").textContent=artist.bio;
+
+  const worksGrid=document.getElementById("profile-works-grid");
+  const artistWorks=state.arts.filter(a=>artist.works.includes(a.title));
+  if(artistWorks.length){
+    worksGrid.innerHTML=artistWorks.map(w=>`
+      <article class="work profile-work">
+        <div class="visual"><img src="${w.image}" alt="${w.title}" loading="lazy"></div>
+        <div class="work-info"><div><div class="work-title">${w.title}</div><small>${w.artist} · ${w.year}</small></div><div class="work-meta">${w.technique}<br>${w.theme}</div></div>
+      </article>`).join("");
+  }else{
+    worksGrid.innerHTML="<p style='color:var(--muted);font-size:14px;'>Nenhuma obra cadastrada ainda.</p>";
+  }
+
+   profile.classList.add("show");
+   document.body.style.overflow="hidden";
+   window.scrollTo({top:0,behavior:"smooth"});
+}
+
+document.addEventListener("click",e=>{
+  const f=e.target.closest(".filter");
+  if(f){
+   document.querySelectorAll(".filter").forEach(b=>b.classList.remove("active"));f.classList.add("active");
+   const v=f.dataset.filter;
+   renderArts(v==="all"?state.arts:state.arts.filter(x=>x.category===v));
+  }
+
+  const work=e.target.closest(".work");
+  if(work && !work.classList.contains("profile-work")){
+    const title=work.querySelector(".work-title").textContent.trim();
+    const art=state.arts.find(a=>a.title===title);
+    if(art){
+      const box=document.querySelector("#surprise-result");
+      box.innerHTML=`<img src="${art.image}" alt="${art.title}" loading="lazy"><div class="work-info"><div><div class="work-title">${art.title}</div><small>${art.artist}</small></div><div class="work-meta">${art.technique}</div></div>`;
+      box.classList.remove("show");void box.offsetWidth;box.classList.add("show");
+      box.scrollIntoView({behavior:"smooth",block:"center"});
+    }
+  }
+
+  const artist=e.target.closest(".artist");
+  if(artist){
+    e.preventDefault();
+    const name=artist.querySelector(".artist-name").textContent.trim();
+    const found=state.artists.find(a=>a.name===name);
+    if(found) showArtistProfile(found);
+  }
+});
+
+document.querySelector("#surprise").addEventListener("click",()=>{
+  if(!state.arts.length)return;
+  const x=state.arts[Math.floor(Math.random()*state.arts.length)];
+  const box=document.querySelector("#surprise-result");
+  box.innerHTML=`<img src="${x.image}" alt="${x.title}" loading="lazy"><div class="work-info"><div><div class="work-title">${x.title}</div><small>${x.artist}</small></div><div class="work-meta">${x.technique}</div></div>`;
+  box.classList.remove("show");void box.offsetWidth;box.classList.add("show");
+  box.scrollIntoView({behavior:"smooth",block:"center"});
+});
+
+document.getElementById("profile-close").addEventListener("click",closeProfile);
+document.addEventListener("keydown",e=>{if(e.key==="Escape")closeProfile()});
+
+function closeProfile(){
+  const profile=document.querySelector("#artist-profile");
+  profile.classList.remove("show");
+  document.body.style.overflow="";
+}
+
+loadData();
