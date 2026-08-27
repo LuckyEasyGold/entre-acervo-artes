@@ -11,7 +11,9 @@
   <script src="https://unpkg.com/htmx.org@2.0.6"></script>
 </head>
 <body>
-  <canvas id="bg-canvas"></canvas>
+  <video id="bg-video" autoplay muted loop playsinline poster="assets/vid-01.jpg">
+    <source src="assets/vid-01.mp4" type="video/mp4">
+  </video>
   <div class="grain"></div>
   <header class="topbar">
     <a class="brand" href="#inicio"><span>ENTRE</span><small>acervo de artes · IFPR</small></a>
@@ -34,10 +36,10 @@
       </div>
       <div class="hero-art">
         <div class="orb orb-a"></div><div class="orb orb-b"></div>
-        <div class="floating-card card-back"></div>
-        <div class="floating-card card-main">
-          <img src="assets/art-01.svg" alt="Obra abstrata de exemplo">
-          <div class="art-caption"><span>01 / 08</span><b>Vestígio</b><small>Marina Alves · 2026</small></div>
+        <div class="fan-carousel" id="hero-carousel"></div>
+        <div class="fan-arrows">
+          <button class="fan-arrow fan-prev" id="fan-prev" aria-label="Anterior">‹</button>
+          <button class="fan-arrow fan-next" id="fan-next" aria-label="Próximo">›</button>
         </div>
         <div class="vertical-note">NAVEGUE · DESCUBRA · INTERPRETE</div>
       </div>
@@ -110,7 +112,6 @@
   </main>
 
   <footer><div class="brand"><span>ENTRE</span><small>acervo de artes · IFPR Campus Palmas</small></div><div>Um projeto experimental para a comunidade artística.</div><div>2026 ©</div></footer>
-  <script src="assets/bg.js"></script>
   <script src="assets/app.js"></script>
 </body>
 </html>
