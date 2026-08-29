@@ -50,9 +50,8 @@ function showArtistProfile(artist){
     worksGrid.innerHTML="<p style='color:var(--muted);font-size:14px;'>Nenhuma obra cadastrada ainda.</p>";
   }
 
-   profile.classList.add("show");
-   document.body.style.overflow="hidden";
-   window.scrollTo({top:0,behavior:"smooth"});
+    profile.classList.add("show");
+    document.body.style.overflow="hidden";
 }
 
 document.addEventListener("click",e=>{
