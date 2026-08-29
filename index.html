@@ -18,7 +18,12 @@
   <header class="topbar">
     <a class="brand" href="index.html"><span>ENTRE</span><small>acervo de artes · IFPR</small></a>
     <nav>
-      <a href="index.html#explorar">Explorar</a><a href="index.html#artistas">Artistas</a><a href="index.html#colecoes">Coleções</a><a href="index.html#inspiracao">Inspiração</a><a href="docs.html">Documentos</a>
+      <a href="index.html#explorar">Explorar</a>
+      <a href="index.html#artistas">Artistas</a>
+      <a href="index.html#orientadores">Orientadores</a>
+      <a href="index.html#colecoes">Galeria</a>
+      <a href="index.html#inspiracao">Inspiração</a>
+      <a href="docs.html">Acervo Bibliogáfico</a>
     </nav>
     <button class="menu-dot" aria-label="Menu"><i></i><i></i><i></i></button>
   </header>
@@ -45,7 +50,7 @@
       </div>
     </section>
 
-    <section class="ticker"><div>DESENHO <b>✳</b> FOTOGRAFIA <b>✳</b> PINTURA <b>✳</b> CORPO <b>✳</b> MEMÓRIA <b>✳</b> EXPERIMENTAÇÃO <b>✳</b> AUDIOVISUAL <b>✳</b> </div></section>
+    
 
     <section class="section explore" id="explorar">
       <div class="section-head">
@@ -88,9 +93,9 @@
     </section>
 
     <section class="artist-profile" id="artist-profile">
-      <button class="profile-close" id="profile-close" aria-label="Fechar perfil">✕</button>
       <div class="profile-layout">
         <div class="profile-header">
+          <button class="profile-close" id="profile-close" aria-label="Fechar perfil">✕</button>
           <img id="profile-img" src="" alt="">
           <div class="profile-intro">
             <p class="eyebrow">ARTISTA</p>
@@ -106,6 +111,10 @@
             <p class="eyebrow">ACERVO</p>
             <div id="profile-works-grid" class="profile-works-grid"></div>
           </div>
+        </div>
+        <div class="profile-nav">
+          <button class="profile-arrow profile-prev" id="profile-prev" aria-label="Artista anterior">‹</button>
+          <button class="profile-arrow profile-next" id="profile-next" aria-label="Próximo artista">›</button>
         </div>
       </div>
     </section>

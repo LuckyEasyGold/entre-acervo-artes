@@ -1,4 +1,4 @@
-const state={arts:[],artists:[]};
+const state={arts:[],artists:[],currentArtistIndex:-1};
 
 async function loadData(){
   try{
@@ -30,7 +30,8 @@ function renderArtists(items){
    </a>`).join("");
 }
 
-function showArtistProfile(artist){
+function showArtistProfile(artist, index){
+  state.currentArtistIndex = index;
   const profile=document.querySelector("#artist-profile");
   document.getElementById("profile-img").src=artist.image;
   document.getElementById("profile-img").alt=artist.name;
@@ -50,8 +51,24 @@ function showArtistProfile(artist){
     worksGrid.innerHTML="<p style='color:var(--muted);font-size:14px;'>Nenhuma obra cadastrada ainda.</p>";
   }
 
-    profile.classList.add("show");
-    document.body.style.overflow="hidden";
+  profile.classList.add("show");
+  document.body.style.overflow="hidden";
+}
+
+function prevArtist(){
+  if(state.currentArtistIndex > 0){
+    showArtistProfile(state.artists[state.currentArtistIndex - 1], state.currentArtistIndex - 1);
+  }else if(state.artists.length){
+    showArtistProfile(state.artists[state.artists.length - 1], state.artists.length - 1);
+  }
+}
+
+function nextArtist(){
+  if(state.currentArtistIndex < state.artists.length - 1){
+    showArtistProfile(state.artists[state.currentArtistIndex + 1], state.currentArtistIndex + 1);
+  }else if(state.artists.length){
+    showArtistProfile(state.artists[0], 0);
+  }
 }
 
 document.addEventListener("click",e=>{
@@ -78,8 +95,8 @@ document.addEventListener("click",e=>{
   if(artist){
     e.preventDefault();
     const name=artist.querySelector(".artist-name").textContent.trim();
-    const found=state.artists.find(a=>a.name===name);
-    if(found) showArtistProfile(found);
+    const idx=state.artists.findIndex(a=>a.name===name);
+    if(idx>=0) showArtistProfile(state.artists[idx], idx);
   }
 });
 
@@ -92,8 +109,17 @@ document.querySelector("#surprise").addEventListener("click",()=>{
   box.scrollIntoView({behavior:"smooth",block:"center"});
 });
 
+document.getElementById("profile-prev").addEventListener("click", prevArtist);
+document.getElementById("profile-next").addEventListener("click", nextArtist);
+
 document.getElementById("profile-close").addEventListener("click",closeProfile);
-document.addEventListener("keydown",e=>{if(e.key==="Escape")closeProfile()});
+document.addEventListener("keydown",e=>{
+  if(e.key==="Escape")closeProfile();
+  const profile=document.querySelector("#artist-profile");
+  if(!profile.classList.contains("show")) return;
+  if(e.key==="ArrowLeft") prevArtist();
+  if(e.key==="ArrowRight") nextArtist();
+});
 
 function closeProfile(){
   const profile=document.querySelector("#artist-profile");
