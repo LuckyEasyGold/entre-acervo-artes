@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>ENTRE — Meu Painel</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Manrope:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,500;0,600;1,500;1,600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/style.css">
+  <script src="https://unpkg.com/htmx.org@2.0.6"></script>
+</head>
+<body>
+  <video id="bg-video" autoplay muted loop playsinline poster="assets/vid-01.jpg">
+    <source src="assets/vid-01.mp4" type="video/mp4">
+  </video>
+  <div class="grain"></div>
+  <header class="topbar">
+    <a class="brand" href="index.html"><span>ENTRE</span><small>acervo de artes · IFPR</small></a>
+    <nav>
+      <a href="index.html#explorar">Explorar</a>
+      <a href="index.html#artistas">Artistas</a>
+      <a href="index.html#colecoes">Galeria</a>
+      <a href="dashboard.html">Painel</a>
+      <a href="#" id="logout-link">Sair</a>
+    </nav>
+  </header>
+
+  <main class="dashboard">
+    <div class="dashboard-sidebar">
+      <h2>Painel</h2>
+      <ul>
+        <li><a href="#" class="dash-link active" data-section="profile">Meu Perfil</a></li>
+        <li><a href="#" class="dash-link" data-section="works">Minhas Obras</a></li>
+        <li><a href="#" class="dash-link" data-section="new-work">Nova Obra</a></li>
+        <li><a href="#" class="dash-link" data-section="stats">Estatísticas</a></li>
+      </ul>
+    </div>
+    <div class="dashboard-content">
+      <section id="section-profile" class="dash-section">
+        <h3>Meu Perfil</h3>
+        <form id="profile-form">
+          <label>
+            <span>Nome</span>
+            <input type="text" id="profile-name" required>
+          </label>
+          <label>
+            <span>Bio</span>
+            <textarea id="profile-bio" rows="4"></textarea>
+          </label>
+          <label>
+            <span>Foto de perfil</span>
+            <input type="file" id="profile-image" accept="image/*">
+          </label>
+          <button type="submit" class="btn btn-dark">Salvar <span>↗</span></button>
+        </form>
+      </section>
+
+      <section id="section-works" class="dash-section" style="display:none;">
+        <h3>Minhas Obras</h3>
+        <div id="my-works-list" class="works-list"></div>
+      </section>
+
+      <section id="section-new-work" class="dash-section" style="display:none;">
+        <h3>Nova Obra</h3>
+        <form id="work-form">
+          <label>
+            <span>Título</span>
+            <input type="text" id="work-title" required>
+          </label>
+          <label>
+            <span>Categoria</span>
+            <select id="work-category">
+              <option value="foto">Fotografia</option>
+              <option value="pintura">Pintura</option>
+              <option value="desenho">Desenho</option>
+              <option value="escultura">Escultura</option>
+              <option value="documentario">Documentário</option>
+              <option value="video-arte">Videoarte</option>
+              <option value="danca">Dança</option>
+              <option value="musica">Música</option>
+              <option value="teatro">Teatro</option>
+              <option value="performance">Performance</option>
+              <option value="lipsync">Lipsync</option>
+              <option value="literatura">Literatura</option>
+              <option value="publicacao">Publicação</option>
+              <option value="tcc">TCC</option>
+              <option value="artigo">Artigo</option>
+              <option value="instalacao">Instalação</option>
+              <option value="arte-digital">Arte Digital</option>
+            </select>
+          </label>
+          <label>
+            <span>Ano</span>
+            <input type="number" id="work-year" value="2026">
+          </label>
+          <label>
+            <span>Descrição</span>
+            <textarea id="work-description" rows="3"></textarea>
+          </label>
+          <label>
+            <span>Arquivo (imagem, vídeo ou PDF)</span>
+            <input type="file" id="work-file" accept="image/*,video/*,.pdf">
+          </label>
+          <label>
+            <span>Status</span>
+            <select id="work-status">
+              <option value="draft">Rascunho</option>
+              <option value="published">Publicar</option>
+            </select>
+          </label>
+          <button type="submit" class="btn btn-dark">Salvar <span>↗</span></button>
+        </form>
+      </section>
+
+      <section id="section-stats" class="dash-section" style="display:none;">
+        <h3>Estatísticas</h3>
+        <p>Em breve: views, downloads e métricas de publicação.</p>
+      </section>
+    </div>
+  </main>
+
+  <script src="assets/supabase.js"></script>
+  <script src="assets/dashboard.js"></script>
+</body>
+</html>
