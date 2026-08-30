@@ -13,8 +13,9 @@ Depois abra http://localhost:8000
 - index.html — estrutura da página
 - assets/style.css — identidade visual e animações
 - assets/app.js — filtros, carregamento JSON e modo Inspiração
-- data/arts.json — banco inicial de obras
-- data/artists.json — banco inicial de artistas
+- data/arts.json — banco inicial de obras (depreciado)
+- data/artists.json — banco de artistas (alunos e orientadores) com portfólio, redes sociais e produções acadêmicas
+- data/works.json — banco de obras vinculadas a artistas por ID
 - assets/*.svg — obras fictícias usadas apenas no protótipo
 
 ## HTMX
