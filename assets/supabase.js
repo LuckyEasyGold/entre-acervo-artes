@@ -2,9 +2,9 @@
 // ENTRE — Supabase Client
 // ============================================
 
-// TODO: substituir pelas credenciais do seu projeto Supabase
-const SUPABASE_URL = "https://SEU_PROJETO.supabase.co";
-const SUPABASE_ANON_KEY = "SUA_ANON_KEY";
+import { getConfig } from "./config.js";
+
+const { SUPABASE_URL, SUPABASE_ANON_KEY } = getConfig();
 
 let supabase = null;
 
@@ -18,7 +18,7 @@ try {
 
 export async function getSupabase() {
   if (!supabase) {
-    console.warn("Supabase não configurado. Defina SUPABASE_URL e SUPABASE_ANON_KEY.");
+    console.warn("Supabase não configurado. Verifique assets/config.js");
   }
   return supabase;
 }
