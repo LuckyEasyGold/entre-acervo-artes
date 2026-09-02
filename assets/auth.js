@@ -1,8 +1,8 @@
 // ============================================
-// ENTRE — Auth Logic
+// ENTRE — Auth Logic (Welcome/Login)
 // ============================================
 
-import { signIn, signUp, signOut, getCurrentUser } from "./supabase.js";
+import { signIn, signUp, getCurrentUser } from "./supabase.js";
 
 const loginForm = document.getElementById("login-form");
 const registerForm = document.getElementById("register-form");
@@ -10,28 +10,28 @@ const loginError = document.getElementById("login-error");
 const registerError = document.getElementById("register-error");
 
 function showError(el, msg) {
-  if (el) { el.textContent = msg; }
+  if (el) el.textContent = msg;
+}
+function clearError(el) {
+  if (el) el.textContent = "";
 }
 
-function clearError(el) {
-  if (el) { el.textContent = ""; }
+function activateTab(name) {
+  document.querySelectorAll(".auth-tab").forEach(t => {
+    t.classList.toggle("active", t.dataset.tab === name);
+  });
+  if (loginForm) loginForm.style.display = name === "login" ? "flex" : "none";
+  if (registerForm) registerForm.style.display = name === "register" ? "flex" : "none";
+  clearError(loginError);
+  clearError(registerError);
 }
 
 document.querySelectorAll(".auth-tab").forEach(tab => {
-  tab.addEventListener("click", () => {
-    document.querySelectorAll(".auth-tab").forEach(t => t.classList.remove("active"));
-    tab.classList.add("active");
-    const target = tab.dataset.tab;
-    if (target === "login") {
-      loginForm.style.display = "block";
-      registerForm.style.display = "none";
-    } else {
-      loginForm.style.display = "none";
-      registerForm.style.display = "block";
-    }
-    clearError(loginError);
-    clearError(registerError);
-  });
+  tab.addEventListener("click", () => activateTab(tab.dataset.tab));
+});
+
+document.querySelectorAll("[data-tab-trigger]").forEach(btn => {
+  btn.addEventListener("click", () => activateTab(btn.dataset.tabTrigger));
 });
 
 if (loginForm) {
@@ -44,7 +44,7 @@ if (loginForm) {
     if (error) {
       showError(loginError, error.message || "Erro ao entrar.");
     } else if (data?.user) {
-      window.location.href = "dashboard.html";
+      window.location.href = "home.html";
     }
   });
 }
@@ -61,15 +61,14 @@ if (registerForm) {
     if (error) {
       showError(registerError, error.message || "Erro ao criar conta.");
     } else if (data?.user) {
-      window.location.href = "dashboard.html";
+      window.location.href = "home.html";
     }
   });
 }
 
-// Verificar sessão existente
 (async () => {
   const { user } = await getCurrentUser();
-  if (user && window.location.pathname.includes("login.html")) {
-    window.location.href = "dashboard.html";
+  if (user && window.location.pathname.includes("welcome.html")) {
+    window.location.href = "home.html";
   }
 })();
