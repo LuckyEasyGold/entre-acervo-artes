@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Galeria — ENTRE</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Manrope:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,500;0,600;1,500;1,600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/style.css">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="assets/config.js"></script>
+  <script src="assets/supabase.js"></script>
+</head>
+<body>
+  <div class="grain"></div>
+  <header class="topbar">
+    <a class="brand" href="home.html"><span>ENTRE</span><small>acervo de artes · IFPR</small></a>
+    <nav>
+      <a href="galeria.html" class="active">Galeria</a>
+      <a href="alunos.html">Alunos</a>
+      <a href="orientadores.html">Orientadores</a>
+      <a href="acervo.html">Acervo</a>
+    </nav>
+    <div class="nav-auth" id="nav-auth"></div>
+  </header>
+
+  <main class="galeria-main">
+    <aside class="galeria-sidebar">
+      <h3>Categorias</h3>
+      <ul class="filter-list" id="category-filters">
+        <li><button class="filter active" data-filter="all">Tudo</button></li>
+        <li><button class="filter" data-filter="foto">Fotografia</button></li>
+        <li><button class="filter" data-filter="pintura">Pintura</button></li>
+        <li><button class="filter" data-filter="desenho">Desenho</button></li>
+        <li><button class="filter" data-filter="escultura">Escultura</button></li>
+        <li><button class="filter" data-filter="documentario">Documentário</button></li>
+        <li><button class="filter" data-filter="video-arte">Videoarte</button></li>
+        <li><button class="filter" data-filter="danca">Dança</button></li>
+        <li><button class="filter" data-filter="musica">Música</button></li>
+        <li><button class="filter" data-filter="teatro">Teatro</button></li>
+        <li><button class="filter" data-filter="performance">Performance</button></li>
+        <li><button class="filter" data-filter="lipsync">Lipsync</button></li>
+        <li><button class="filter" data-filter="literatura">Literatura</button></li>
+        <li><button class="filter" data-filter="publicacao">Publicação</button></li>
+        <li><button class="filter" data-filter="tcc">TCC</button></li>
+      </ul>
+    </aside>
+
+    <section class="galeria-content">
+      <div class="galeria-header">
+        <p class="eyebrow">GALERIA</p>
+        <h1>Obras em destaque</h1>
+        <p class="muted"><span id="works-count">0</span> obras</p>
+      </div>
+      <div class="masonry" id="art-grid"></div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="brand"><span>ENTRE</span><small>acervo de artes · IFPR Campus Palmas</small></div>
+    <div>Um projeto experimental para a comunidade artística.</div>
+    <div>2026 ©</div>
+  </footer>
+
+  <script src="assets/auth-guard.js"></script>
+  <script src="assets/galeria.js"></script>
+  <script src="assets/profile-modal.js"></script>
+</body>
+</html>
