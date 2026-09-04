@@ -347,9 +347,9 @@
     "id": "stu-001",
     "name": "Marina Alves",
     "type": "student",
-    "course": "Artes Visuais Â· 3Âº perÃ­odo",
+    "course": "Artes Visuais · 3º período",
     "image": "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=600&q=80",
-    "bio": "InvestigaÃ§Ã£o sobre memÃ³ria afetiva atravÃ©s de tÃ©cnicas mistas e colagem.",
+    "bio": "Investigação sobre memória afetiva através de técnicas mistas e colagem.",
     "works": [
       "work-001",
       "work-002"
@@ -357,7 +357,7 @@
     "academicProductions": [],
     "portfolio": {
       "title": "Portfolio - Marina Alves",
-      "description": "Trabalhos em tÃ©cnicas mistas, colagem e fotografia.",
+      "description": "Trabalhos em técnicas mistas, colagem e fotografia.",
       "categories": [
         "foto",
         "pintura",
@@ -368,19 +368,19 @@
   },
   {
     "id": "stu-002",
-    "name": "JoÃ£o Pedro",
+    "name": "João Pedro",
     "type": "student",
-    "course": "Artes Visuais Â· 4Âº perÃ­odo",
+    "course": "Artes Visuais · 4º período",
     "image": "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=600&q=80",
-    "bio": "Fotografia e vÃ­deo com foco em corpo e espaÃ§o urbano.",
+    "bio": "Fotografia e vídeo com foco em corpo e espaço urbano.",
     "works": [
       "work-003",
       "work-004"
     ],
     "academicProductions": [],
     "portfolio": {
-      "title": "Portfolio - JoÃ£o Pedro",
-      "description": "Fotografia, vÃ­deo-arte e intervenÃ§Ãµes urbanas.",
+      "title": "Portfolio - João Pedro",
+      "description": "Fotografia, vídeo-arte e intervenções urbanas.",
       "categories": [
         "foto",
         "video-arte",
@@ -391,18 +391,18 @@
   },
   {
     "id": "stu-003",
-    "name": "LÃ­via Martins",
+    "name": "Lívia Martins",
     "type": "student",
-    "course": "Artes Visuais Â· 2Âº perÃ­odo",
+    "course": "Artes Visuais · 2º período",
     "image": "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=600&q=80",
-    "bio": "Colagem e desenho como diÃ¡rios visuais.",
+    "bio": "Colagem e desenho como diários visuais.",
     "works": [
       "work-005"
     ],
     "academicProductions": [],
     "portfolio": {
-      "title": "Portfolio - LÃ­via Martins",
-      "description": "Colagens, desenhos e experimentaÃ§Ãµes grÃ¡ficas.",
+      "title": "Portfolio - Lívia Martins",
+      "description": "Colagens, desenhos e experimentações gráficas.",
       "categories": [
         "desenho",
         "pintura",
@@ -415,7 +415,7 @@
     "id": "stu-004",
     "name": "Caio Ferreira",
     "type": "student",
-    "course": "Artes Visuais Â· 5Âº perÃ­odo",
+    "course": "Artes Visuais · 5º período",
     "image": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=600&q=80",
     "bio": "Pintura e escultura com foco em materialidade.",
     "works": [
@@ -424,7 +424,7 @@
     "academicProductions": [],
     "portfolio": {
       "title": "Portfolio - Caio Ferreira",
-      "description": "Pintura, escultura e experimentaÃ§Ã£o com materiais.",
+      "description": "Pintura, escultura e experimentação com materiais.",
       "categories": [
         "pintura",
         "escultura",
@@ -437,7 +437,7 @@
     "id": "stu-005",
     "name": "Ana Clara",
     "type": "student",
-    "course": "Artes Visuais Â· 3Âº perÃ­odo",
+    "course": "Artes Visuais · 3º período",
     "image": "https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=600&q=80",
     "bio": "Fotografia documental e narrativas visuais.",
     "works": [
@@ -459,9 +459,9 @@
     "id": "stu-006",
     "name": "Rafael Lima",
     "type": "student",
-    "course": "Artes Visuais Â· 6Âº perÃ­odo",
+    "course": "Artes Visuais · 6º período",
     "image": "https://images.unsplash.com/photo-1506794778202-cad84cf45f05?auto=format&fit=crop&w=600&q=80",
-    "bio": "Arte e tecnologia, vÃ­deo e instalaÃ§Ã£o.",
+    "bio": "Arte e tecnologia, vídeo e instalação.",
     "works": [
       "work-008",
       "work-009"
@@ -469,7 +469,7 @@
     "academicProductions": [],
     "portfolio": {
       "title": "Portfolio - Rafael Lima",
-      "description": "Videoarte, instalaÃ§Ã£o e arte digital.",
+      "description": "Videoarte, instalação e arte digital.",
       "categories": [
         "video-arte",
         "foto",
@@ -482,7 +482,7 @@
     "id": "stu-007",
     "name": "Beatriz Souza",
     "type": "student",
-    "course": "Artes Visuais Â· 2Âº perÃ­odo",
+    "course": "Artes Visuais · 2º período",
     "image": "https://images.unsplash.com/photo-1524503033411-c9566986fc8f?auto=format&fit=crop&w=600&q=80",
     "bio": "Pintura e desenho com foco em paisagem afetiva.",
     "works": [
@@ -504,16 +504,16 @@
     "id": "stu-008",
     "name": "Gabriel Oliveira",
     "type": "student",
-    "course": "Artes Visuais Â· 4Âº perÃ­odo",
+    "course": "Artes Visuais · 4º período",
     "image": "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=600&q=80",
-    "bio": "Fotografia e documentÃ¡rio experimental.",
+    "bio": "Fotografia e documentário experimental.",
     "works": [
       "work-011"
     ],
     "academicProductions": [],
     "portfolio": {
       "title": "Portfolio - Gabriel Oliveira",
-      "description": "Fotografia, documentÃ¡rio e vÃ­deo.",
+      "description": "Fotografia, documentário e vídeo.",
       "categories": [
         "foto",
         "documentario",
@@ -526,16 +526,16 @@
     "id": "stu-009",
     "name": "Isabela Ribeiro",
     "type": "student",
-    "course": "Artes Visuais Â· 3Âº perÃ­odo",
+    "course": "Artes Visuais · 3º período",
     "image": "https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?auto=format&fit=crop&w=600&q=80",
-    "bio": "Escultura e instalaÃ§Ã£o com materiais reciclados.",
+    "bio": "Escultura e instalação com materiais reciclados.",
     "works": [
       "work-012"
     ],
     "academicProductions": [],
     "portfolio": {
       "title": "Portfolio - Isabela Ribeiro",
-      "description": "Escultura, instalaÃ§Ã£o e arte ambiental.",
+      "description": "Escultura, instalação e arte ambiental.",
       "categories": [
         "escultura",
         "desenho",
@@ -548,7 +548,7 @@
     "id": "stu-010",
     "name": "Lucas Pereira",
     "type": "student",
-    "course": "Artes Visuais Â· 5Âº perÃ­odo",
+    "course": "Artes Visuais · 5º período",
     "image": "https://images.unsplash.com/photo-1506794778202-cad84cf45f05?auto=format&fit=crop&w=600&q=80",
     "bio": "Desenho e pintura com foco em figura humana.",
     "works": [
@@ -570,7 +570,7 @@
     "id": "stu-011",
     "name": "Mariana Costa",
     "type": "student",
-    "course": "Artes Visuais Â· 2Âº perÃ­odo",
+    "course": "Artes Visuais · 2º período",
     "image": "https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=600&q=80",
     "bio": "Performance e arte do corpo.",
     "works": [
@@ -579,7 +579,7 @@
     "academicProductions": [],
     "portfolio": {
       "title": "Portfolio - Mariana Costa",
-      "description": "Performance, danÃ§a e corpo.",
+      "description": "Performance, dança e corpo.",
       "categories": [
         "performance",
         "danca",
@@ -592,16 +592,16 @@
     "id": "stu-012",
     "name": "Pedro Henrique",
     "type": "student",
-    "course": "Artes Visuais Â· 6Âº perÃ­odo",
+    "course": "Artes Visuais · 6º período",
     "image": "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=600&q=80",
-    "bio": "Escultura e instalaÃ§Ã£o com metal e luz.",
+    "bio": "Escultura e instalação com metal e luz.",
     "works": [
       "work-015"
     ],
     "academicProductions": [],
     "portfolio": {
       "title": "Portfolio - Pedro Henrique",
-      "description": "Escultura, instalaÃ§Ã£o e luz.",
+      "description": "Escultura, instalação e luz.",
       "categories": [
         "escultura",
         "desenho",
@@ -614,7 +614,7 @@
     "id": "stu-013",
     "name": "Sofia Lima",
     "type": "student",
-    "course": "Artes Visuais Â· 3Âº perÃ­odo",
+    "course": "Artes Visuais · 3º período",
     "image": "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=600&q=80",
     "bio": "Videoarte e narrativas digitais.",
     "works": [
@@ -624,7 +624,7 @@
     "academicProductions": [],
     "portfolio": {
       "title": "Portfolio - Sofia Lima",
-      "description": "Videoarte, ediÃ§Ã£o e narrativas digitais.",
+      "description": "Videoarte, edição e narrativas digitais.",
       "categories": [
         "video-arte",
         "foto",
@@ -637,16 +637,16 @@
     "id": "stu-014",
     "name": "Matheus Souza",
     "type": "student",
-    "course": "Artes Visuais Â· 4Âº perÃ­odo",
+    "course": "Artes Visuais · 4º período",
     "image": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=600&q=80",
-    "bio": "Arte generativa e programaÃ§Ã£o criativa.",
+    "bio": "Arte generativa e programação criativa.",
     "works": [
       "work-018"
     ],
     "academicProductions": [],
     "portfolio": {
       "title": "Portfolio - Matheus Souza",
-      "description": "Arte digital, cÃ³digo e interatividade.",
+      "description": "Arte digital, código e interatividade.",
       "categories": [
         "video-arte",
         "desenho",
@@ -659,16 +659,16 @@
     "id": "stu-015",
     "name": "Laura Santos",
     "type": "student",
-    "course": "Artes Visuais Â· 2Âº perÃ­odo",
+    "course": "Artes Visuais · 2º período",
     "image": "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=600&q=80",
-    "bio": "Fotografia e vÃ­deo experimental.",
+    "bio": "Fotografia e vídeo experimental.",
     "works": [
       "work-019"
     ],
     "academicProductions": [],
     "portfolio": {
       "title": "Portfolio - Laura Santos",
-      "description": "Fotografia, vÃ­deo e documentÃ¡rio.",
+      "description": "Fotografia, vídeo e documentário.",
       "categories": [
         "foto",
         "documentario",
@@ -681,16 +681,16 @@
     "id": "stu-016",
     "name": "Felipe Ribeiro",
     "type": "student",
-    "course": "Artes Visuais Â· 5Âº perÃ­odo",
+    "course": "Artes Visuais · 5º período",
     "image": "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=600&q=80",
-    "bio": "InstalaÃ§Ã£o e arte sonora.",
+    "bio": "Instalação e arte sonora.",
     "works": [
       "work-020"
     ],
     "academicProductions": [],
     "portfolio": {
       "title": "Portfolio - Felipe Ribeiro",
-      "description": "InstalaÃ§Ã£o, som e tecnologia.",
+      "description": "Instalação, som e tecnologia.",
       "categories": [
         "escultura",
         "musica",
@@ -703,16 +703,16 @@
     "id": "stu-017",
     "name": "Camila Oliveira",
     "type": "student",
-    "course": "Artes Visuais Â· 3Âº perÃ­odo",
+    "course": "Artes Visuais · 3º período",
     "image": "https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=600&q=80",
-    "bio": "Performance e danÃ§a contemporÃ¢nea.",
+    "bio": "Performance e dança contemporÀ¢nea.",
     "works": [
       "work-021"
     ],
     "academicProductions": [],
     "portfolio": {
       "title": "Portfolio - Camila Oliveira",
-      "description": "Performance, danÃ§a e corpo.",
+      "description": "Performance, dança e corpo.",
       "categories": [
         "performance",
         "danca",
@@ -725,7 +725,7 @@
     "id": "stu-018",
     "name": "Thiago Mendes",
     "type": "student",
-    "course": "Artes Visuais Â· 4Âº perÃ­odo",
+    "course": "Artes Visuais · 4º período",
     "image": "https://images.unsplash.com/photo-1506794778202-cad84cf45f05?auto=format&fit=crop&w=600&q=80",
     "bio": "Teatro e performance com foco em lipsync.",
     "works": [
@@ -747,16 +747,16 @@
     "id": "stu-019",
     "name": "Fernanda Lima",
     "type": "student",
-    "course": "Artes Visuais Â· 2Âº perÃ­odo",
+    "course": "Artes Visuais · 2º período",
     "image": "https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?auto=format&fit=crop&w=600&q=80",
-    "bio": "DanÃ§a e movimento como linguagem artÃ­stica.",
+    "bio": "Dança e movimento como linguagem artística.",
     "works": [
       "work-023"
     ],
     "academicProductions": [],
     "portfolio": {
       "title": "Portfolio - Fernanda Lima",
-      "description": "DanÃ§a contemporÃ¢nea e movimento.",
+      "description": "Dança contemporÀ¢nea e movimento.",
       "categories": [
         "danca",
         "performance",
@@ -769,7 +769,7 @@
     "id": "stu-020",
     "name": "Ricardo Santos",
     "type": "student",
-    "course": "Artes Visuais Â· 6Âº perÃ­odo",
+    "course": "Artes Visuais · 6º período",
     "image": "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=600&q=80",
     "bio": "Literatura e performance textual.",
     "works": [
@@ -778,7 +778,7 @@
     "academicProductions": [],
     "portfolio": {
       "title": "Portfolio - Ricardo Santos",
-      "description": "Literatura, performance textual e publicaÃ§Ãµes.",
+      "description": "Literatura, performance textual e publicações.",
       "categories": [
         "literatura",
         "performance",

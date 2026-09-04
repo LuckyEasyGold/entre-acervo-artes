@@ -2,8 +2,6 @@
 // ENTRE — Dashboard Logic
 // ============================================
 
-import { getCurrentUser, signOut } from "./supabase.js";
-
 const dashLinks = document.querySelectorAll(".dash-link");
 const sections = document.querySelectorAll(".dash-section");
 const logoutLink = document.getElementById("logout-link");
@@ -27,22 +25,29 @@ dashLinks.forEach(link => {
 if (logoutLink) {
   logoutLink.addEventListener("click", async (e) => {
     e.preventDefault();
-    await signOut();
+    await window.signOut();
     window.location.href = "index.html";
   });
 }
 
+// ============================================
+// Inicialização: verificar auth e carregar dados
+// ============================================
+
 (async () => {
-  const { user, error } = await getCurrentUser();
+    const { user, error } = await window.getCurrentUser();
   if (!user) {
     window.location.href = "login.html";
     return;
   }
 
-  // Carregar perfil do usuário
-  const supabase = await (await import("./supabase.js")).getSupabase();
-  if (!supabase) return;
+  const supabase = window.supabaseClient;
+  if (!supabase) {
+    console.error("Supabase não configurado");
+    return;
+  }
 
+  // Carregar perfil do usuário
   const { data: artist } = await supabase
     .from("artists")
     .select("*")
@@ -63,13 +68,28 @@ if (logoutLink) {
       e.preventDefault();
       const name = document.getElementById("profile-name").value.trim();
       const bio = document.getElementById("profile-bio").value.trim();
-      const { error } = await supabase
-        .from("artists")
-        .upsert({ user_id: user.id, name, bio, updated_at: new Date() });
-      if (error) {
-        alert("Erro ao salvar perfil: " + error.message);
+
+      if (!artist) {
+        // Criar novo perfil
+        const { error } = await supabase
+          .from("artists")
+          .insert({ user_id: user.id, name, bio, type: "student" });
+        if (error) {
+          alert("Erro ao criar perfil: " + error.message);
+        } else {
+          alert("Perfil criado!");
+          window.location.reload();
+        }
       } else {
-        alert("Perfil salvo!");
+        // Atualizar perfil existente
+        const { error } = await supabase
+          .from("artists")
+          .upsert({ id: artist.id, user_id: user.id, name, bio, updated_at: new Date() });
+        if (error) {
+          alert("Erro ao salvar perfil: " + error.message);
+        } else {
+          alert("Perfil salvo!");
+        }
       }
     });
   }
@@ -82,16 +102,8 @@ if (logoutLink) {
       .select("*")
       .eq("artist_id", artist.id)
       .order("created_at", { ascending: false });
-    if (works && works.length) {
-      worksList.innerHTML = works.map(w => `
-        <div class="work-item">
-          <strong>${w.title}</strong>
-          <small>${w.category} · ${w.status}</small>
-        </div>
-      `).join("");
-    } else {
-      worksList.innerHTML = "<p>Nenhuma obra cadastrada ainda.</p>";
-    }
+
+    renderWorksList(worksList, works);
   }
 
   // Salvar nova obra
@@ -159,15 +171,28 @@ if (logoutLink) {
           .select("*")
           .eq("artist_id", artist.id)
           .order("created_at", { ascending: false });
-        if (works && works.length) {
-          worksList.innerHTML = works.map(w => `
-            <div class="work-item">
-              <strong>${w.title}</strong>
-              <small>${w.category} · ${w.status}</small>
-            </div>
-          `).join("");
-        }
+        renderWorksList(worksList, works);
       }
     });
   }
 })();
+
+// ============================================
+// Helpers
+// ============================================
+
+function renderWorksList(container, works) {
+  if (!works || !works.length) {
+    container.innerHTML = "<p>Nenhuma obra cadastrada ainda.</p>";
+    return;
+  }
+  container.innerHTML = works.map(w => `
+    <div class="work-item">
+      <div class="work-item-info">
+        <strong>${w.title}</strong>
+        <small>${w.category} · ${w.year || ""}</small>
+      </div>
+      <span class="work-status work-status-${w.status}">${w.status === "published" ? "Publicada" : "Rascunho"}</span>
+    </div>
+  `).join("");
+}

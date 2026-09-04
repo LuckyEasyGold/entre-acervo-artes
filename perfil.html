@@ -6,11 +6,11 @@
   <title>Meu Perfil — ENTRE</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Manrope:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,500;0,600;1,500;1,600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Manrope:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,500;0,600;1,500;1,600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="assets/style.css">
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="assets/config.js"></script>
   <script src="assets/supabase.js"></script>
+  <script src="assets/auth-guard.js"></script>
 </head>
 <body>
   <div class="grain"></div>
@@ -25,7 +25,7 @@
     <div class="nav-auth" id="nav-auth"></div>
   </header>
 
-  <main class="perfil-main">
+  <main class="perfil-main" id="perfil-main">
     <div id="perfil-loading">Carregando...</div>
   </main>
 
@@ -35,7 +35,7 @@
     <div>2026 ©</div>
   </footer>
 
-  <script src="assets/auth-guard.js"></script>
   <script src="assets/perfil.js"></script>
+  <script>window.requireAuth();</script>
 </body>
 </html>

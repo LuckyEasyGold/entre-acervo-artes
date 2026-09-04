@@ -8,7 +8,7 @@
   const main = document.getElementById("obra-main");
   if (!id || !main) return;
 
-  const supabase = await getSupabase();
+  const supabase = window.supabaseClient;
   let work = null;
   let artist = null;
   let allArtists = [];
@@ -80,8 +80,8 @@
     if (authorLink) {
       authorLink.addEventListener("click", e => {
         e.preventDefault();
-        if (artist && window.showArtistProfile) {
-          window.showArtistProfile(artist, allArtists.indexOf(artist), { works: allWorks, artists: allArtists });
+        if (artist) {
+          window.location.href = "artista.html?id=" + encodeURIComponent(artist.id);
         }
       });
     }

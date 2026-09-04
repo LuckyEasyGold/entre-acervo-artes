@@ -2,14 +2,12 @@
 // ENTRE — Galeria (grid com filtros)
 // ============================================
 
-import { getSupabase } from "./supabase.js";
-
 let allWorks = [];
 let allArtists = [];
 let currentFilter = "all";
 
 async function loadData() {
-  const supabase = await getSupabase();
+    const supabase = window.supabaseClient;
 
   if (supabase) {
     try {
@@ -71,8 +69,8 @@ function render() {
         const workId = el.dataset.workId;
         const work = allWorks.find(w => w.id === workId);
         const artist = allArtists.find(a => a.id === (work?.artistId || work?.artists?.id));
-        if (work && artist && window.showArtistProfile) {
-          window.showArtistProfile(artist, allArtists.indexOf(artist), { works: allWorks, modal: true });
+        if (artist) {
+          window.location.href = "artista.html?id=" + encodeURIComponent(artist.id);
         }
       });
     });

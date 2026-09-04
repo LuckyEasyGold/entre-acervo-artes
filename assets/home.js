@@ -2,10 +2,8 @@
 // ENTRE — Home (preview aleatório de obras)
 // ============================================
 
-import { getSupabase } from "./supabase.js";
-
-(async () => {
-  const supabase = await getSupabase();
+(async function() {
+  const supabase = window.supabaseClient;
   let works = [];
 
   if (supabase) {
