@@ -2,8 +2,6 @@
 // ENTRE — Modal de Perfil (com abas)
 // ============================================
 
-import { getSupabase } from "./supabase.js";
-
 let currentArtist = null;
 let currentArtistIndex = -1;
 let allArtists = [];
@@ -39,11 +37,16 @@ function buildSocials(social) {
   return items.length ? `<div class="social-icons">${items.join("")}</div>` : "";
 }
 
-function renderAbout(artist) {
+function renderAbout(artist, isOwner) {
   const isAdvisor = artist.type === "advisor";
   const subtitle = isAdvisor
     ? [artist.title, artist.area].filter(Boolean).join(" · ")
     : (artist.course || "Aluno do curso de Artes Visuais");
+
+  let cta = "";
+  if (isOwner) {
+    cta = '<div class="profile-cta"><a class="btn btn-dark" href="perfil.html">Gerenciar meu perfil</a></div>';
+  }
 
   return `
     <div class="tab-pane active" data-pane="sobre">
@@ -59,9 +62,7 @@ function renderAbout(artist) {
       <div class="profile-bio">
         <p>${artist.bio || ''}</p>
       </div>
-      <div class="profile-cta">
-        <button class="btn btn-dark">${isAdvisor ? 'Seguir' : 'Solicitar orientação'}</button>
-      </div>
+      ${cta}
     </div>`;
 }
 
@@ -165,7 +166,7 @@ function renderAcervo(artist) {
     </div>`;
 }
 
-export function showArtistProfile(artist, index, ctx = {}) {
+function showArtistProfile(artist, index, ctx = {}) {
   if (ctx.works) allWorks = ctx.works;
   if (ctx.artists) allArtists = ctx.artists;
   currentArtist = artist;
@@ -180,8 +181,9 @@ export function showArtistProfile(artist, index, ctx = {}) {
   if (isAdvisor) tabs.push(tabButton("Alunos", "alunos"));
   tabs.push(tabButton("Acervo", "acervo"));
 
+  const isOwner = ctx.isOwner === true;
   const panes = [
-    renderAbout(artist),
+    renderAbout(artist, isOwner),
     isAdvisor ? renderCurriculo(artist) : "",
     isAdvisor ? renderProducoes(artist) : "",
     isAdvisor ? renderAlunos(artist) : "",
@@ -253,13 +255,13 @@ document.addEventListener("keydown", e => {
   if (e.key === "ArrowRight") navigateProfile(1);
 });
 
-export function setArtistsContext(artists, works) {
+window.setArtistsContext = function(artists, works) {
   allArtists = artists || [];
   allWorks = works || [];
 }
 
 (async () => {
-  const supabase = await getSupabase();
+  const supabase = window.supabaseClient;
   if (supabase) {
     try {
       const { data: artists } = await supabase.from("artists").select("*");

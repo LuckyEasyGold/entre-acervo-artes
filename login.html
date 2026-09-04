@@ -8,71 +8,117 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Manrope:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,500;0,600;1,500;1,600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="assets/style.css">
-  <script src="https://unpkg.com/htmx.org@2.0.6"></script>
+  <script src="assets/config.js"></script>
+  <script src="assets/supabase.js"></script>
+  <script src="assets/auth-guard.js"></script>
 </head>
-<body>
-  <video id="bg-video" autoplay muted loop playsinline poster="assets/vid-01.jpg">
-    <source src="assets/vid-01.mp4" type="video/mp4">
-  </video>
+<body class="auth-body">
   <div class="grain"></div>
   <header class="topbar">
-    <a class="brand" href="index.html"><span>ENTRE</span><small>acervo de artes · IFPR</small></a>
-    <nav>
-      <a href="index.html#explorar">Explorar</a>
-      <a href="index.html#artistas">Artistas</a>
-      <a href="index.html#colecoes">Galeria</a>
-      <a href="index.html#inspiracao">Inspiração</a>
-      <a href="docs.html">Acervo Bibliográfico</a>
+    <a class="brand" href="home.html"><span>ENTRE</span><small>acervo de artes · IFPR</small></a>
+      <nav>
+        <a href="home.html">Início</a>
+      <a href="galeria.html">Galeria</a>
+      <a href="alunos.html">Alunos</a>
+      <a href="orientadores.html">Orientadores</a>
+      <a href="acervo.html">Acervo</a>
     </nav>
+    <div class="nav-auth" id="nav-auth"></div>
+    <button class="menu-dot" aria-label="Menu"><i></i><i></i><i></i></button>
   </header>
 
   <main class="auth-main">
-    <div class="auth-card">
-      <div class="auth-tabs">
-        <button class="auth-tab active" data-tab="login">Entrar</button>
-        <button class="auth-tab" data-tab="register">Criar conta</button>
+    <div class="auth-container">
+      <div class="auth-card">
+        <div class="auth-tabs">
+          <button class="auth-tab active" data-tab="login">Entrar</button>
+          <button class="auth-tab" data-tab="register">Criar conta</button>
+        </div>
+
+        <form id="login-form" class="auth-form">
+          <div class="auth-field">
+            <label for="login-email">Email</label>
+            <input type="email" id="login-email" required placeholder="seu@email.com" autocomplete="email">
+          </div>
+          <div class="auth-field">
+            <label for="login-password">Senha</label>
+            <div class="password-wrap">
+              <input type="password" id="login-password" required placeholder="••••••••" autocomplete="current-password">
+              <button type="button" class="password-toggle" aria-label="Mostrar senha" data-target="login-password">👁</button>
+            </div>
+          </div>
+          <button type="submit" class="btn btn-dark btn-full">Entrar <span>↗</span></button>
+          <p id="login-error" class="auth-error"></p>
+        </form>
+
+        <form id="register-form" class="auth-form" style="display:none;">
+          <div class="auth-field">
+            <label for="reg-name">Nome completo</label>
+            <input type="text" id="reg-name" required placeholder="Seu nome">
+          </div>
+          <div class="auth-field">
+            <label for="reg-email">Email</label>
+            <input type="email" id="reg-email" required placeholder="seu@email.com" autocomplete="email">
+          </div>
+          <div class="auth-field">
+            <label for="reg-password">Senha</label>
+            <div class="password-wrap">
+              <input type="password" id="reg-password" required placeholder="••••••••" minlength="6" autocomplete="new-password">
+              <button type="button" class="password-toggle" aria-label="Mostrar senha" data-target="reg-password">👁</button>
+            </div>
+          </div>
+          <div class="auth-field">
+            <label for="reg-password-confirm">Confirmar senha</label>
+            <div class="password-wrap">
+              <input type="password" id="reg-password-confirm" required placeholder="••••••••" minlength="6" autocomplete="new-password">
+              <button type="button" class="password-toggle" aria-label="Mostrar senha" data-target="reg-password-confirm">👁</button>
+            </div>
+          </div>
+          <div class="auth-field">
+            <label for="reg-type">Eu sou</label>
+            <div class="auth-type-select">
+              <label class="type-option">
+                <input type="radio" name="reg-type" value="student" checked>
+                <span class="type-card">
+                  <span class="type-icon">✦</span>
+                  <span class="type-label">Aluno Artista</span>
+                </span>
+              </label>
+              <label class="type-option">
+                <input type="radio" name="reg-type" value="advisor">
+                <span class="type-card">
+                  <span class="type-icon">◈</span>
+                  <span class="type-label">Orientador</span>
+                </span>
+              </label>
+            </div>
+          </div>
+          <button type="submit" class="btn btn-dark btn-full">Criar conta <span>↗</span></button>
+          <p id="register-error" class="auth-error"></p>
+        </form>
       </div>
-
-      <form id="login-form" class="auth-form">
-        <label>
-          <span>Email</span>
-          <input type="email" id="login-email" required placeholder="seu@email.com">
-        </label>
-        <label>
-          <span>Senha</span>
-          <input type="password" id="login-password" required placeholder="••••••••">
-        </label>
-        <button type="submit" class="btn btn-dark">Entrar <span>↗</span></button>
-        <p id="login-error" class="auth-error"></p>
-      </form>
-
-      <form id="register-form" class="auth-form" style="display:none;">
-        <label>
-          <span>Nome completo</span>
-          <input type="text" id="reg-name" required placeholder="Seu nome">
-        </label>
-        <label>
-          <span>Email</span>
-          <input type="email" id="reg-email" required placeholder="seu@email.com">
-        </label>
-        <label>
-          <span>Senha</span>
-          <input type="password" id="reg-password" required placeholder="••••••••" minlength="6">
-        </label>
-        <label>
-          <span>Tipo</span>
-          <select id="reg-type">
-            <option value="student">Aluno</option>
-            <option value="advisor">Orientador</option>
-          </select>
-        </label>
-        <button type="submit" class="btn btn-dark">Criar conta <span>↗</span></button>
-        <p id="register-error" class="auth-error"></p>
-      </form>
     </div>
   </main>
 
-  <script src="assets/supabase.js"></script>
+  <footer>
+    <div class="brand"><span>ENTRE</span><small>acervo de artes · IFPR Campus Palmas</small></div>
+    <div>Um projeto experimental para a comunidade artística.</div>
+    <div>2026 ©</div>
+  </footer>
+
   <script src="assets/auth.js"></script>
+  <script>
+    setTimeout(function() {
+      try {
+        if (typeof window.initAuthGuard === "function") {
+          window.initAuthGuard();
+        } else {
+          console.warn("[login] initAuthGuard não disponível");
+        }
+      } catch (e) {
+        console.error("[login] initAuthGuard error:", e);
+      }
+    }, 500);
+  </script>
 </body>
 </html>
