@@ -8,6 +8,7 @@ let currentFilter = "all";
 
 async function loadData() {
     const supabase = window.supabaseClient;
+    console.log("[galeria] supabaseClient:", !!supabase);
 
   if (supabase) {
     try {
@@ -16,24 +17,30 @@ async function loadData() {
         .select("*, artists(name, image, id)")
         .eq("status", "published");
       const { data: artists, error: aErr } = await supabase.from("artists").select("*");
+      console.log("[galeria] supabase works:", works?.length, "error:", wErr?.message);
+      console.log("[galeria] supabase artists:", artists?.length, "error:", aErr?.message);
       if (!wErr && works) allWorks = works;
       if (!aErr && artists) allArtists = artists;
     } catch (e) {
-      console.warn("Supabase falhou", e);
+      console.warn("[galeria] Supabase falhou", e);
     }
   }
 
   if (!allWorks.length) {
     try {
       const r = await fetch("/data/works.json");
+      console.log("[galeria] fetch works status:", r.status);
       allWorks = await r.json();
       const r2 = await fetch("/data/artists.json");
+      console.log("[galeria] fetch artists status:", r2.status);
       allArtists = await r2.json();
+      console.log("[galeria] fallback works:", allWorks.length, "artists:", allArtists.length);
     } catch (e) {
-      console.warn("Fallback JSON falhou", e);
+      console.warn("[galeria] Fallback JSON falhou", e);
     }
   }
 
+  console.log("[galeria] final allWorks:", allWorks.length, "allArtists:", allArtists.length);
   render();
 }
 
