@@ -190,6 +190,15 @@ nav a:hover::after { width: 100%; }
   transition: color 0.3s;
 }
 .nav-logout:hover { color: #ef4444; }
+.nav-moderacao {
+  font-family: var(--mono);
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+  transition: color 0.3s;
+}
+.nav-moderacao:hover { color: var(--acid); }
 .btn-sm {
   padding: 8px 16px;
   font-size: 10px;
@@ -941,122 +950,30 @@ nav a:hover::after { width: 100%; }
    AUTH PAGES
    ============================================ */
 .auth-body {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
+  display: flex;
+  flex-direction: column;
   min-height: 100vh;
   background: var(--paper);
 }
 .auth-body::before { display: none; }
-
-/* Left: Visual */
-.auth-visual {
-  position: relative;
-  background: var(--ink);
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  padding: 40px;
-}
-.auth-visual-overlay {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(160deg, rgba(139,92,246,0.25) 0%, rgba(26,26,46,0.9) 50%, rgba(26,26,46,0.95) 100%);
-  z-index: 1;
-}
-.auth-visual-content {
-  position: relative;
-  z-index: 2;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  height: 100%;
-}
-.auth-brand {
-  display: flex;
-  flex-direction: column;
-}
-.auth-brand span {
-  font-weight: 700;
-  letter-spacing: 0.25em;
-  font-size: 20px;
-  color: var(--paper);
-}
-.auth-brand small {
-  font-family: var(--mono);
-  font-size: 9px;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: rgba(255,255,255,0.5);
-  margin-top: 6px;
-}
-.auth-visual-quote {
-  color: rgba(255,255,255,0.7);
-  max-width: 320px;
-}
-.auth-visual-quote p {
-  font-family: var(--serif);
-  font-size: 22px;
-  font-style: italic;
-  line-height: 1.5;
-  margin-bottom: 12px;
-  color: rgba(255,255,255,0.85);
-}
-.auth-visual-quote small {
-  font-family: var(--mono);
-  font-size: 10px;
-  color: var(--acid-soft);
-  letter-spacing: 0.08em;
-}
-
-/* Gallery grid on visual side */
-.auth-gallery-grid {
-  position: absolute;
-  inset: 0;
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 4px;
-  padding: 40px;
-  opacity: 0.12;
-  z-index: 0;
-}
-.auth-gallery-item {
-  overflow: hidden;
-  animation: galleryFade 1.2s var(--ease) both;
-}
-.auth-gallery-item img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  filter: grayscale(0.5);
-}
-@keyframes galleryFade {
-  from { opacity: 0; transform: scale(1.1); }
-  to { opacity: 1; transform: none; }
-}
-
-/* Right: Form */
-.auth-form-side {
+.auth-main {
+  flex: 1;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 40px;
-  overflow-y: auto;
+  padding: 24px;
 }
-.auth-form-container {
+.auth-container {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: 24px;
+  overflow: hidden;
+  box-shadow: 0 30px 60px rgba(15, 23, 42, 0.18);
+  max-width: 980px;
   width: 100%;
-  max-width: 400px;
 }
-.auth-form-header {
-  margin-bottom: 36px;
-}
-.auth-form-header h1 {
-  font-size: clamp(36px, 5vw, 56px);
-  margin-bottom: 12px;
-}
-.auth-form-header p {
-  font-size: 14px;
-  color: var(--muted-dark);
   line-height: 1.6;
 }
 
@@ -1205,7 +1122,8 @@ nav a:hover::after { width: 100%; }
   background: var(--ink);
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
+  justify-content: center;
+  align-items: center;
   padding: 40px;
   overflow: hidden;
 }
@@ -1223,12 +1141,14 @@ nav a:hover::after { width: 100%; }
   z-index: 2;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
-  height: 100%;
+  align-items: center;
+  text-align: center;
+  gap: 24px;
 }
 .auth-brand {
   display: flex;
   flex-direction: column;
+  align-items: center;
   gap: 6px;
 }
 .auth-brand span {
@@ -1246,11 +1166,11 @@ nav a:hover::after { width: 100%; }
 }
 .auth-visual-quote {
   color: rgba(255,255,255,0.8);
-  max-width: 300px;
+  max-width: 280px;
 }
 .auth-visual-quote p {
   font-family: var(--serif);
-  font-size: 22px;
+  font-size: 20px;
   font-style: italic;
   line-height: 1.5;
   margin-bottom: 10px;
@@ -1268,6 +1188,10 @@ nav a:hover::after { width: 100%; }
   flex-direction: column;
   justify-content: center;
   background: var(--paper);
+}
+.auth-header {
+  margin-bottom: 32px;
+  text-align: center;
 }
 .auth-header {
   margin-bottom: 32px;

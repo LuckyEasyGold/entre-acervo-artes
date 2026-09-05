@@ -58,10 +58,30 @@ function bindForms() {
         if (error) {
           showError(loginError, "Credenciais inválidas.");
         } else if (data && data.user) {
-          if (typeof window.refreshNav === "function") {
-            window.refreshNav();
+          const supabase = window.supabaseClient;
+          let approved = true;
+          let role = null;
+          if (supabase) {
+            const { data: artist } = await supabase
+              .from("artists")
+              .select("status, role")
+              .eq("user_id", data.user.id)
+              .single();
+            if (artist) {
+              if (artist.status === "pending") approved = false;
+              role = artist.role;
+            }
           }
-          window.location.href = "home.html";
+          if (!approved) {
+            showError(loginError, "Sua conta está aguardando aprovação de um orientador.");
+            await window.signOut();
+            return;
+          }
+          if (["adm", "moderador", "orientador"].includes(role)) {
+            window.location.href = "home.html";
+          } else {
+            window.location.href = "home.html";
+          }
         }
       } catch (err) {
         console.error("login submit error:", err);
@@ -91,10 +111,19 @@ function bindForms() {
         if (error) {
           showError(registerError, "Não foi possível criar a conta. Tente novamente.");
         } else if (data && data.user) {
-          if (typeof window.refreshNav === "function") {
-            window.refreshNav();
+          const supabase = window.supabaseClient;
+          if (supabase) {
+            await supabase.from("artists").insert({
+              user_id: data.user.id,
+              name: name,
+              type: type,
+              role: type === "advisor" ? "orientador" : "artista",
+              status: "pending",
+              moderator_votes: 0
+            });
           }
-          window.location.href = "home.html";
+          showError(registerError, "Conta criada! Aguardando aprovação de um orientador.");
+          registerForm.reset();
         }
       } catch (err) {
         console.error("register submit error:", err);

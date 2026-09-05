@@ -64,7 +64,7 @@ window.requireAuth = async function() {
   return user;
 };
 
-window.updateNav = function(user) {
+window.updateNav = async function(user) {
   const topbar = document.querySelector(".topbar");
   if (!topbar) return;
 
@@ -75,23 +75,42 @@ window.updateNav = function(user) {
     topbar.appendChild(authContainer);
   }
 
-  if (user) {
-    const email = user.email || "";
-    const shortName = email.split("@")[0];
-    authContainer.innerHTML =
-      '<a href="perfil.html" class="nav-user-link" title="' + email + '">' +
-        '<span class="nav-user-icon">●</span>' +
-        '<span class="nav-user-name">' + shortName + '</span>' +
-      '</a>' +
-      '<a href="#" id="nav-logout" class="nav-logout">Sair</a>';
-    const logoutBtn = authContainer.querySelector("#nav-logout");
-    if (logoutBtn) {
-      logoutBtn.addEventListener("click", function(e) {
-        e.preventDefault();
-        window.doLogout();
-      });
-    }
-  } else {
+  if (!user) {
     authContainer.innerHTML = '<a href="login.html" class="btn btn-sm btn-outline">Entrar</a>';
+    return;
+  }
+
+  const supabase = window.supabaseClient;
+  let role = null;
+  if (supabase) {
+    const { data } = await supabase
+      .from("artists")
+      .select("role")
+      .eq("user_id", user.id)
+      .single();
+    role = data?.role || null;
+  }
+
+  const canModerate = ["adm", "moderador", "orientador"].includes(role);
+
+  let html = "";
+  if (canModerate) {
+    html += '<a href="moderacao.html" class="nav-moderacao">Moderação</a>';
+  }
+  html +=
+    '<a href="perfil.html" class="nav-user-link" title="' + user.email + '">' +
+      '<span class="nav-user-icon">●</span>' +
+      '<span class="nav-user-name">' + (user.email || "").split("@")[0] + '</span>' +
+    '</a>' +
+    '<a href="#" id="nav-logout" class="nav-logout">Sair</a>';
+
+  authContainer.innerHTML = html;
+
+  const logoutBtn = authContainer.querySelector("#nav-logout");
+  if (logoutBtn) {
+    logoutBtn.addEventListener("click", function(e) {
+      e.preventDefault();
+      window.doLogout();
+    });
   }
 };
