@@ -56,13 +56,13 @@
   } else if (fileType === "pdf" && fileUrl) {
     mediaHtml = `<iframe src="${fileUrl}"></iframe>`;
   } else if (fileUrl) {
-    mediaHtml = `<img src="${fileUrl}" alt="${work.title}">`;
+    mediaHtml = `<img src="${fileUrl}" alt="${work.title}" class="no-copy" draggable="false">`;
   }
 
   if (main) {
     main.innerHTML = `
       <article class="obra-detail">
-        <div class="obra-media">${mediaHtml}</div>
+        <div class="obra-media no-copy">${mediaHtml}</div>
         <div class="obra-meta">
           <p class="eyebrow">${(work.category || '').toUpperCase()}</p>
           <h1>${work.title}</h1>
@@ -71,7 +71,7 @@
             ${work.year ? ' · ' + work.year : ''}
           </p>
           <p>${work.description || ''}</p>
-          <button class="btn btn-dark" id="request-orient">Solicitar orientação</button>
+          <button class="btn btn-dark" id="expand-btn">Ampliar visualização</button>
         </div>
       </article>
     `;
@@ -85,5 +85,20 @@
         }
       });
     }
+
+    const expandBtn = document.getElementById("expand-btn");
+    if (expandBtn && typeof window.openProtectedLightbox === "function") {
+      expandBtn.addEventListener("click", () => {
+        window.openProtectedLightbox(work, artist?.name || "");
+      });
+    }
+
+    disableRightClick(main);
+  }
+
+  function disableRightClick(root) {
+    root.addEventListener("contextmenu", function(e) {
+      e.preventDefault();
+    });
   }
 })();

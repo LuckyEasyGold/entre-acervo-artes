@@ -67,7 +67,10 @@ function render() {
         const workId = el.dataset.workId;
         const work = allWorks.find(w => w.id === workId);
         const artist = allArtists.find(a => a.id === (work?.artistId || work?.artists?.id));
-        if (artist) {
+        const artistName = artist ? artist.name : (work?.artists?.name || "");
+        if (work && typeof window.openProtectedLightbox === "function") {
+          window.openProtectedLightbox(work, artistName);
+        } else if (artist) {
           window.location.href = "artista.html?id=" + encodeURIComponent(artist.id);
         }
       });
