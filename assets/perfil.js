@@ -187,6 +187,11 @@
     container.innerHTML = `
       <div class="perfil-section">
         <h2>Publicar nova obra</h2>
+        <p class="muted">
+          ${canPublishDirectly
+            ? "Publicações aprovadas automaticamente."
+            : "Obras ficam pendentes até aprovação do seu orientador."}
+        </p>
         <form id="work-form" class="perfil-form">
           <label><span>Título</span><input type="text" id="work-title" required></label>
           <label><span>Categoria</span>
@@ -209,8 +214,9 @@
           </label>
           <label><span>Ano</span><input type="number" id="work-year" value="${new Date().getFullYear()}"></label>
           <label><span>Descrição</span><textarea id="work-description" rows="3"></textarea></label>
+          <label><span>Link da imagem (Pinterest público)</span><input type="url" id="work-image" placeholder="https://pinterest.com/pin/..." required></label>
+          <label><span>Link do YouTube (vídeo público)</span><input type="url" id="work-youtube" placeholder="https://youtube.com/..."></label>
           <label><span>Arquivo (imagem, vídeo ou PDF)</span><input type="file" id="work-file" accept="image/*,video/*,.pdf"></label>
-          <label><span>Link do YouTube</span><input type="url" id="work-youtube" placeholder="https://youtube.com/..."></label>
           <label><span>Visibilidade</span>
             <select id="work-visibility">
               <option value="public">Pública</option>
@@ -219,7 +225,7 @@
           </label>
           <label><span>Status</span>
             <select id="work-status">
-              <option value="draft">Rascunho</option>
+              <option value="draft">Salvar como rascunho</option>
               <option value="published">Publicar</option>
             </select>
           </label>
@@ -258,15 +264,17 @@
 
       const { error } = await supabase.from("works").insert({
         artist_id: artist.id,
+        advisor_id: artist.advisor_id || null,
         title, category, year, description,
-        visibility, status, youtube_url,
+        visibility, status: finalStatus, youtube_url,
+        image: imageUrl || file_url,
         file_url, file_type
       });
 
       if (error) {
         alert("Erro: " + error.message);
       } else {
-        alert("Obra salva!");
+        alert(canPublishDirectly ? "Obra publicada!" : "Obra enviada para aprovação do orientador.");
         showSection("works");
       }
     });
@@ -346,7 +354,7 @@
     });
   }
 
-  function renderAdvisor(container) {
+  async function renderAdvisor(container) {
     if (!artist || !artist.id) {
       container.innerHTML = "<p>Complete seu perfil primeiro.</p>";
       return;
