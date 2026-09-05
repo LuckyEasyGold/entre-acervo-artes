@@ -67,6 +67,7 @@
         <aside class="perfil-sidebar">
           <button class="btn-back" onclick="window.history.back()">← Voltar</button>
           <button class="perfil-nav-item active" data-section="profile">Meu Perfil</button>
+          <button class="perfil-nav-item" data-section="advisor">Orientador</button>
           <button class="perfil-nav-item" data-section="publish">Publicar obra</button>
           <button class="perfil-nav-item" data-section="works">Meu acervo</button>
           <button class="perfil-nav-item" data-section="security">Segurança</button>
@@ -93,6 +94,9 @@
     switch (section) {
       case "profile":
         renderProfile(content);
+        break;
+      case "advisor":
+        renderAdvisor(content);
         break;
       case "publish":
         renderPublish(content);
@@ -340,6 +344,90 @@
         alert("Erro: " + err.message);
       }
     });
+  }
+
+  function renderAdvisor(container) {
+    if (!artist || !artist.id) {
+      container.innerHTML = "<p>Complete seu perfil primeiro.</p>";
+      return;
+    }
+
+    const { data: advisors } = await supabase
+      .from("artists")
+      .select("id, name, area, title")
+      .eq("type", "advisor")
+      .eq("status", "approved");
+
+    const currentAdvisor = artist.advisor_id
+      ? advisors?.find(a => a.id === artist.advisor_id)
+      : null;
+
+    let html = `
+      <div class="perfil-section">
+        <h2>Meu orientador</h2>
+        <p class="muted">Escolha um orientador responsável por suas publicações.</p>
+    `;
+
+    if (currentAdvisor) {
+      html += `
+        <div class="perfil-work" style="margin-bottom:16px;">
+          <strong>${currentAdvisor.name}</strong>
+          <small>${currentAdvisor.title || ''} · ${currentAdvisor.area || ''}</small>
+        </div>
+      `;
+    }
+
+    html += `
+        <form id="advisor-form" class="perfil-form">
+          <label><span>Orientador</span>
+            <select id="advisor-select">
+              <option value="">Selecione um orientador...</option>
+              ${(advisors || []).map(a => `
+                <option value="${a.id}" ${a.id === artist.advisor_id ? 'selected' : ''}>${a.name} — ${a.area || a.title || ''}</option>
+              `).join("")}
+            </select>
+          </label>
+          <label><span>Mensagem (opcional)</span>
+            <textarea id="advisor-message" rows="2" placeholder="Gostaria de ser orientado por você..."></textarea>
+          </label>
+          <button type="submit" class="btn btn-dark">Solicitar orientação</button>
+        </form>
+      </div>
+    `;
+
+    container.innerHTML = html;
+
+    const form = document.getElementById("advisor-form");
+    if (form) {
+      form.addEventListener("submit", async e => {
+        e.preventDefault();
+        const advisorId = document.getElementById("advisor-select").value;
+        const message = document.getElementById("advisor-message").value.trim();
+
+        if (!advisorId) {
+          alert("Selecione um orientador.");
+          return;
+        }
+
+        const requestId = "req-" + Date.now() + "-" + Math.random().toString(36).slice(2, 8);
+        const { error } = await supabase
+          .from("advisor_requests")
+          .insert({
+            id: requestId,
+            artist_id: artist.id,
+            advisor_id: advisorId,
+            message: message,
+            status: "pending"
+          });
+
+        if (error) {
+          alert("Erro: " + error.message);
+        } else {
+          alert("Solicitação enviada! Aguarde o orientador aprovar.");
+          form.reset();
+        }
+      });
+    }
   }
 
   function escapeHtml(text) {

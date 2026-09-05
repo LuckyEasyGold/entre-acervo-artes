@@ -2,7 +2,7 @@
 -- ENTRE Acervo de Artes — Supabase Schema
 -- ============================================
 
--- Habilitar extensões necessárias
+-- Extensão
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
 -- ============================================
@@ -19,16 +19,20 @@ CREATE TABLE IF NOT EXISTS public.categories (
 -- Tabela: artists
 -- ============================================
 CREATE TABLE IF NOT EXISTS public.artists (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id TEXT PRIMARY KEY,
   user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE UNIQUE,
   name TEXT NOT NULL,
-  username TEXT UNIQUE,
   type TEXT NOT NULL CHECK (type IN ('student', 'advisor')),
+  role TEXT NOT NULL DEFAULT 'artista' CHECK (role IN ('adm', 'moderador', 'orientador', 'artista')),
+  status TEXT NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'approved', 'rejected')),
+  approved_by TEXT REFERENCES public.artists(id) ON DELETE SET NULL,
+  approved_at TIMESTAMPTZ,
+  advisor_id TEXT REFERENCES public.artists(id) ON DELETE SET NULL,
+  moderator_votes INT DEFAULT 0,
   course TEXT,
   title TEXT,
   area TEXT,
   subjects TEXT[],
-  is_curator BOOLEAN DEFAULT false,
   image TEXT,
   bio TEXT,
   curriculum TEXT,
@@ -38,34 +42,24 @@ CREATE TABLE IF NOT EXISTS public.artists (
 );
 
 -- ============================================
--- Tabela: advisors_students (vínculos)
--- ============================================
-CREATE TABLE IF NOT EXISTS public.advisors_students (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-  advisor_id UUID NOT NULL REFERENCES public.artists(id) ON DELETE CASCADE,
-  student_id UUID NOT NULL REFERENCES public.artists(id) ON DELETE CASCADE,
-  status TEXT DEFAULT 'pending' CHECK (status IN ('pending', 'approved', 'rejected')),
-  created_at TIMESTAMPTZ DEFAULT now(),
-  UNIQUE(advisor_id, student_id)
-);
-
--- ============================================
 -- Tabela: works
 -- ============================================
 CREATE TABLE IF NOT EXISTS public.works (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-  artist_id UUID NOT NULL REFERENCES public.artists(id) ON DELETE CASCADE,
+  id TEXT PRIMARY KEY,
+  artist_id TEXT NOT NULL REFERENCES public.artists(id) ON DELETE CASCADE,
   title TEXT NOT NULL,
   category TEXT NOT NULL,
   year INT,
   description TEXT,
+  image TEXT,
   file_url TEXT,
   file_type TEXT CHECK (file_type IN ('image', 'video', 'pdf', 'youtube')),
   youtube_url TEXT,
   external_links JSONB DEFAULT '[]'::jsonb,
-  advisor_id UUID REFERENCES public.artists(id) ON DELETE SET NULL,
-  status TEXT DEFAULT 'draft' CHECK (status IN ('draft', 'published')),
+  status TEXT DEFAULT 'draft' CHECK (status IN ('draft', 'pending', 'published', 'rejected')),
   visibility TEXT DEFAULT 'public' CHECK (visibility IN ('public', 'private', 'unlisted')),
+  reviewed_by TEXT REFERENCES public.artists(id) ON DELETE SET NULL,
+  reviewed_at TIMESTAMPTZ,
   views INT DEFAULT 0,
   downloads INT DEFAULT 0,
   created_at TIMESTAMPTZ DEFAULT now(),
@@ -73,46 +67,31 @@ CREATE TABLE IF NOT EXISTS public.works (
 );
 
 -- ============================================
--- Tabela: academic_productions
+-- Tabela: advisor_votes (eleição de moderador)
 -- ============================================
-CREATE TABLE IF NOT EXISTS public.academic_productions (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-  artist_id UUID NOT NULL REFERENCES public.artists(id) ON DELETE CASCADE,
-  type TEXT NOT NULL,
-  title TEXT NOT NULL,
-  year INT,
-  publisher TEXT,
-  journal TEXT,
-  url TEXT,
-  created_at TIMESTAMPTZ DEFAULT now()
+CREATE TABLE IF NOT EXISTS public.advisor_votes (
+  id TEXT PRIMARY KEY,
+  artist_id TEXT NOT NULL REFERENCES public.artists(id) ON DELETE CASCADE,
+  advisor_id TEXT NOT NULL REFERENCES public.artists(id) ON DELETE CASCADE,
+  created_at TIMESTAMPTZ DEFAULT now(),
+  UNIQUE(artist_id, advisor_id)
 );
 
 -- ============================================
--- Tabela: critiques (críticas dos orientadores)
+-- Tabela: advisor_requests (solicitação de orientador)
 -- ============================================
-CREATE TABLE IF NOT EXISTS public.critiques (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-  work_id UUID NOT NULL REFERENCES public.works(id) ON DELETE CASCADE,
-  advisor_id UUID NOT NULL REFERENCES public.artists(id) ON DELETE CASCADE,
-  content TEXT NOT NULL,
-  created_at TIMESTAMPTZ DEFAULT now()
-);
-
--- ============================================
--- Tabela: work_requests (solicitações de orientação)
--- ============================================
-CREATE TABLE IF NOT EXISTS public.work_requests (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-  work_id UUID NOT NULL REFERENCES public.works(id) ON DELETE CASCADE,
-  student_id UUID NOT NULL REFERENCES public.artists(id) ON DELETE CASCADE,
-  advisor_id UUID NOT NULL REFERENCES public.artists(id) ON DELETE CASCADE,
-  message TEXT,
+CREATE TABLE IF NOT EXISTS public.advisor_requests (
+  id TEXT PRIMARY KEY,
+  artist_id TEXT NOT NULL REFERENCES public.artists(id) ON DELETE CASCADE,
+  advisor_id TEXT NOT NULL REFERENCES public.artists(id) ON DELETE CASCADE,
   status TEXT DEFAULT 'pending' CHECK (status IN ('pending', 'approved', 'rejected')),
-  created_at TIMESTAMPTZ DEFAULT now()
+  message TEXT,
+  created_at TIMESTAMPTZ DEFAULT now(),
+  UNIQUE(artist_id, advisor_id)
 );
 
 -- ============================================
--- Trigger: updated_at
+-- Triggers
 -- ============================================
 CREATE OR REPLACE FUNCTION public.set_updated_at()
 RETURNS TRIGGER AS $$

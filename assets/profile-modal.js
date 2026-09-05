@@ -258,7 +258,7 @@ document.addEventListener("keydown", e => {
 window.setArtistsContext = function(artists, works) {
   allArtists = artists || [];
   allWorks = works || [];
-}
+};
 
 (async () => {
   const supabase = window.supabaseClient;
