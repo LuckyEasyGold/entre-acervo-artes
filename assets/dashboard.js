@@ -35,145 +35,158 @@ if (logoutLink) {
 // ============================================
 
 (async () => {
+  try {
+    while (typeof window.getCurrentUser !== "function") {
+      await new Promise(r => setTimeout(r, 50));
+    }
+    await window.initAuthGuard();
+
     const { user, error } = await window.getCurrentUser();
-  if (!user) {
-    window.location.href = "login.html";
-    return;
-  }
+    if (!user) {
+      window.location.href = "login.html";
+      return;
+    }
 
-  const supabase = window.supabaseClient;
-  if (!supabase) {
-    console.error("Supabase não configurado");
-    return;
-  }
+    const supabase = window.supabaseClient;
+    if (!supabase) {
+      console.error("Supabase não configurado");
+      return;
+    }
 
-  // Carregar perfil do usuário
-  const { data: artist } = await supabase
-    .from("artists")
-    .select("*")
-    .eq("user_id", user.id)
-    .single();
-
-  if (artist) {
-    const nameEl = document.getElementById("profile-name");
-    const bioEl = document.getElementById("profile-bio");
-    if (nameEl) nameEl.value = artist.name || "";
-    if (bioEl) bioEl.value = artist.bio || "";
-  }
-
-  // Salvar perfil
-  const profileForm = document.getElementById("profile-form");
-  if (profileForm) {
-    profileForm.addEventListener("submit", async (e) => {
-      e.preventDefault();
-      const name = document.getElementById("profile-name").value.trim();
-      const bio = document.getElementById("profile-bio").value.trim();
-
-      if (!artist) {
-        // Criar novo perfil
-        const { error } = await supabase
-          .from("artists")
-          .insert({ user_id: user.id, name, bio, type: "student" });
-        if (error) {
-          alert("Erro ao criar perfil: " + error.message);
-        } else {
-          alert("Perfil criado!");
-          window.location.reload();
-        }
-      } else {
-        // Atualizar perfil existente
-        const { error } = await supabase
-          .from("artists")
-          .upsert({ id: artist.id, user_id: user.id, name, bio, updated_at: new Date() });
-        if (error) {
-          alert("Erro ao salvar perfil: " + error.message);
-        } else {
-          alert("Perfil salvo!");
-        }
-      }
-    });
-  }
-
-  // Carregar obras do usuário
-  const worksList = document.getElementById("my-works-list");
-  if (worksList && artist) {
-    const { data: works } = await supabase
-      .from("works")
+    // Carregar perfil do usuário
+    const { data: artist } = await supabase
+      .from("artists")
       .select("*")
-      .eq("artist_id", artist.id)
-      .order("created_at", { ascending: false });
+      .eq("user_id", user.id)
+      .single();
 
-    renderWorksList(worksList, works);
-  }
+    if (artist) {
+      const nameEl = document.getElementById("profile-name");
+      const bioEl = document.getElementById("profile-bio");
+      if (nameEl) nameEl.value = artist.name || "";
+      if (bioEl) bioEl.value = artist.bio || "";
+    }
 
-  // Salvar nova obra
-  const workForm = document.getElementById("work-form");
-  if (workForm && artist) {
-    workForm.addEventListener("submit", async (e) => {
-      e.preventDefault();
-      const title = document.getElementById("work-title").value.trim();
-      const category = document.getElementById("work-category").value;
-      const year = parseInt(document.getElementById("work-year").value) || new Date().getFullYear();
-      const description = document.getElementById("work-description").value.trim();
-      const status = document.getElementById("work-status").value;
-      const fileInput = document.getElementById("work-file");
+    // Salvar perfil
+    const profileForm = document.getElementById("profile-form");
+    if (profileForm) {
+      profileForm.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const name = document.getElementById("profile-name").value.trim();
+        const bio = document.getElementById("profile-bio").value.trim();
 
-      let file_url = null;
-      let file_type = null;
-
-      if (fileInput.files && fileInput.files[0]) {
-        const file = fileInput.files[0];
-        const ext = file.name.split(".").pop().toLowerCase();
-        if (["jpg", "jpeg", "png", "gif", "webp"].includes(ext)) file_type = "image";
-        else if (["mp4", "mov", "avi", "webm"].includes(ext)) file_type = "video";
-        else if (ext === "pdf") file_type = "pdf";
-        else {
-          alert("Tipo de arquivo não suportado.");
-          return;
+        if (!artist) {
+          // Criar novo perfil
+          const { error } = await supabase
+            .from("artists")
+            .insert({ id: "artist-" + Date.now() + "-" + Math.random().toString(36).slice(2, 8), user_id: user.id, name, bio, type: "student" });
+          if (error) {
+            alert("Erro ao criar perfil: " + error.message);
+          } else {
+            alert("Perfil criado!");
+            window.location.reload();
+          }
+        } else {
+          // Atualizar perfil existente
+          const { error } = await supabase
+            .from("artists")
+            .upsert({ id: artist.id, user_id: user.id, name, bio, updated_at: new Date() });
+          if (error) {
+            alert("Erro ao salvar perfil: " + error.message);
+          } else {
+            alert("Perfil salvo!");
+          }
         }
+      });
+    }
 
-        const filePath = `works/${artist.id}/${Date.now()}_${file.name}`;
-        const { error: uploadError } = await supabase.storage
-          .from("works")
-          .upload(filePath, file);
-        if (uploadError) {
-          alert("Erro no upload: " + uploadError.message);
-          return;
-        }
-        const { data: { publicUrl } } = supabase.storage
-          .from("works")
-          .getPublicUrl(filePath);
-        file_url = publicUrl;
-      }
-
-      const { error } = await supabase
+    // Carregar obras do usuário
+    const worksList = document.getElementById("my-works-list");
+    if (worksList && artist) {
+      const { data: works } = await supabase
         .from("works")
-        .insert({
-          artist_id: artist.id,
-          title,
-          category,
-          year,
-          description,
-          file_url,
-          file_type,
-          status
-        });
+        .select("*")
+        .eq("artist_id", artist.id)
+        .order("created_at", { ascending: false });
 
-      if (error) {
-        alert("Erro ao salvar obra: " + error.message);
-      } else {
-        alert("Obra salva!");
-        workForm.reset();
-        showSection("works");
-        // Recarregar lista
-        const { data: works } = await supabase
+      renderWorksList(worksList, works);
+    }
+
+    // Salvar nova obra
+    const workForm = document.getElementById("work-form");
+    if (workForm && artist) {
+      workForm.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const title = document.getElementById("work-title").value.trim();
+        const category = document.getElementById("work-category").value;
+        const year = parseInt(document.getElementById("work-year").value) || new Date().getFullYear();
+        const description = document.getElementById("work-description").value.trim();
+        const status = document.getElementById("work-status").value;
+        const fileInput = document.getElementById("work-file");
+
+        let file_url = null;
+        let file_type = null;
+
+        if (fileInput.files && fileInput.files[0]) {
+          const file = fileInput.files[0];
+          const ext = file.name.split(".").pop().toLowerCase();
+          if (["jpg", "jpeg", "png", "gif", "webp"].includes(ext)) file_type = "image";
+          else if (["mp4", "mov", "avi", "webm"].includes(ext)) file_type = "video";
+          else if (ext === "pdf") file_type = "pdf";
+          else {
+            alert("Tipo de arquivo não suportado.");
+            return;
+          }
+
+          const filePath = `works/${artist.id}/${Date.now()}_${file.name}`;
+          const { error: uploadError } = await supabase.storage
+            .from("works")
+            .upload(filePath, file);
+          if (uploadError) {
+            alert("Erro no upload: " + uploadError.message);
+            return;
+          }
+          const { data: { publicUrl } } = supabase.storage
+            .from("works")
+            .getPublicUrl(filePath);
+          file_url = publicUrl;
+        }
+
+        const { error } = await supabase
           .from("works")
-          .select("*")
-          .eq("artist_id", artist.id)
-          .order("created_at", { ascending: false });
-        renderWorksList(worksList, works);
-      }
-    });
+          .insert({
+            artist_id: artist.id,
+            title,
+            category,
+            year,
+            description,
+            file_url,
+            file_type,
+            status
+          });
+
+        if (error) {
+          alert("Erro ao salvar obra: " + error.message);
+        } else {
+          alert("Obra salva!");
+          workForm.reset();
+          showSection("works");
+          // Recarregar lista
+          const { data: works } = await supabase
+            .from("works")
+            .select("*")
+            .eq("artist_id", artist.id)
+            .order("created_at", { ascending: false });
+          renderWorksList(worksList, works);
+        }
+      });
+    }
+  } catch (err) {
+    console.error("[dashboard] error:", err);
+    const main = document.getElementById("perfil-main");
+    if (main) {
+      main.innerHTML = '<p class="auth-error">Erro ao carregar dashboard: ' + err.message + '</p>';
+    }
   }
 })();
 

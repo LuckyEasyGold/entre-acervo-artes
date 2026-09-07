@@ -114,16 +114,29 @@ function bindForms() {
         } else if (data && data.user) {
           const supabase = window.supabaseClient;
           if (supabase) {
-            await supabase.from("artists").insert({
-              user_id: data.user.id,
-              name: name,
-              type: type,
-              role: type === "advisor" ? "orientador" : "artista",
-              status: "pending",
-              moderator_votes: 0
-            });
+            try {
+              const { error: insertError } = await supabase.from("artists").insert({
+                id: "artist-" + Date.now() + "-" + Math.random().toString(36).slice(2, 8),
+                user_id: data.user.id,
+                name: name,
+                type: type,
+                role: type === "advisor" ? "orientador" : "artista",
+                status: "pending",
+                moderator_votes: 0
+              });
+              if (insertError) {
+                console.error("[auth] insert artist error:", insertError);
+                showError(registerError, "Conta criada, mas houve um problema ao salvar o perfil. Faça login e complete seu perfil.");
+              } else {
+                showError(registerError, "Conta criada! Aguardando aprovação de um orientador.");
+              }
+            } catch (insertErr) {
+              console.error("[auth] insert artist exception:", insertErr);
+              showError(registerError, "Conta criada, mas houve um problema ao salvar o perfil. Faça login e complete seu perfil.");
+            }
+          } else {
+            showError(registerError, "Conta criada! Aguardando aprovação de um orientador.");
           }
-          showError(registerError, "Conta criada! Aguardando aprovação de um orientador.");
           registerForm.reset();
         }
       } catch (err) {
