@@ -77,11 +77,64 @@ h1 em, h2 em {
 }
 h1 em { color: var(--acid); }
 
+/* --- Mobile nav drawer --- */
+.mobile-nav {
+  position: fixed;
+  inset: 0;
+  z-index: 300;
+  background: rgba(26, 26, 46, 0.45);
+  backdrop-filter: blur(10px);
+  visibility: hidden;
+  opacity: 0;
+  transition: opacity 0.3s, visibility 0.3s;
+}
+.mobile-nav.open {
+  visibility: visible;
+  opacity: 1;
+}
+.mobile-nav-inner {
+  position: absolute;
+  top: 0;
+  right: 0;
+  height: 100%;
+  width: min(320px, 85vw);
+  background: var(--paper);
+  border-left: 1px solid var(--line);
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  transform: translateX(20px);
+  transition: transform 0.3s var(--ease);
+}
+.mobile-nav.open .mobile-nav-inner {
+  transform: none;
+}
+.mobile-nav a {
+  display: block;
+  padding: 14px 4px;
+  font-size: 14px;
+  border-bottom: 1px solid var(--line);
+  color: var(--ink);
+}
+.mobile-nav-close {
+  align-self: flex-end;
+  width: 36px;
+  height: 36px;
+  border: 1px solid var(--line-strong);
+  border-radius: 50%;
+  background: var(--paper);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+}
+
 /* ============================================
    TOPBAR / NAVIGATION
    ============================================ */
 .topbar {
-  height: 72px;
+  height: 64px;
   padding: 0 4vw;
   display: flex;
   align-items: center;
@@ -1522,15 +1575,45 @@ footer .brand { color: var(--ink); }
 /* ============================================
    RESPONSIVE
    ============================================ */
+
+/* Tablet pequeno / celular grande */
 @media (max-width: 1024px) {
   .auth-body { grid-template-columns: 1fr; }
   .auth-visual { display: none; }
   .auth-form-side { min-height: 100vh; }
+
+  .page-gallery,
+  .page-artists,
+  .page-advisors,
+  .page-acervo,
+  .page-work,
+  .page-profile {
+    padding: 60px 5vw 80px;
+  }
+
+  .gallery-sidebar {
+    position: static;
+    width: 100%;
+    border-right: none;
+    border-bottom: 1px solid var(--line);
+    padding: 16px 5vw;
+  }
+
+  .gallery-content {
+    padding: 24px 5vw 60px;
+  }
+
+  .artist-card {
+    flex-direction: column;
+    align-items: flex-start;
+  }
 }
 
+/* Celular padrão */
 @media (max-width: 850px) {
   nav { display: none; }
   .menu-dot { display: flex; }
+  .topbar { height: 60px; }
   .hero {
     grid-template-columns: 1fr;
     padding-top: 40px;
@@ -1538,7 +1621,7 @@ footer .brand { color: var(--ink); }
   .hero-art { min-height: 440px; }
   .fan-carousel { height: 380px; }
   .fan-card { width: min(300px, 70vw); }
-  .section { padding: 80px 4vw; }
+  .section { padding: 64px 4vw; }
   .section-head,
   .collection-intro,
   .cta { display: block; }
@@ -1546,7 +1629,7 @@ footer .brand { color: var(--ink); }
   .masonry { columns: 2 200px; }
   .collection-grid { grid-template-columns: 1fr; }
   .artist-list { grid-template-columns: 1fr; }
-  .quote-section { padding: 80px 6vw; }
+  .quote-section { padding: 64px 6vw; }
   .surprise-result {
     position: relative;
     right: auto; bottom: auto;
@@ -1566,8 +1649,24 @@ footer .brand { color: var(--ink); }
   }
   .dashboard-sidebar ul { flex-direction: row; overflow-x: auto; }
   .dashboard-content { padding: 24px; }
+
+  .perfil-layout {
+    grid-template-columns: 1fr !important;
+  }
+  .perfil-sidebar {
+    position: static !important;
+    width: 100% !important;
+    height: auto !important;
+    border-right: none !important;
+    border-bottom: 1px solid var(--line);
+    padding: 16px !important;
+  }
+  .perfil-nav-item {
+    display: inline-flex !important;
+  }
 }
 
+/* Celular pequeno */
 @media (max-width: 520px) {
   .hero-collage { min-height: 70vh; padding: 28px 4vw; }
   .collage-grid { grid-template-columns: 1fr 1fr; grid-template-rows: 120px 120px; }
@@ -1584,6 +1683,71 @@ footer .brand { color: var(--ink); }
   .gallery-filters { padding: 0 4vw; }
   .lightbox-content img { max-height: 50vh; }
   nav a.active::after { width: 100%; }
+
+  h1 { font-size: clamp(36px, 9vw, 56px); }
+  h2 { font-size: clamp(28px, 7vw, 40px); }
+  .section { padding: 48px 4vw; }
+  .page-gallery,
+  .page-artists,
+  .page-advisors,
+  .page-acervo,
+  .page-work,
+  .page-profile {
+    padding: 48px 4vw 60px;
+  }
+  .gallery-sidebar {
+    position: static;
+    width: 100%;
+    border-right: none;
+    border-bottom: 1px solid var(--line);
+    padding: 12px 4vw;
+  }
+  .gallery-content {
+    padding: 20px 4vw 40px;
+  }
+  .perfil-header {
+    flex-direction: column;
+    text-align: center;
+    gap: 16px;
+  }
+  .perfil-photo {
+    width: 100px !important;
+    height: 100px !important;
+  }
+  .profile-layout {
+    padding: 20px 16px !important;
+  }
+  .profile-tabs {
+    gap: 2px;
+    overflow-x: auto;
+  }
+  .profile-tab {
+    padding: 10px 10px;
+    font-size: 10px;
+    white-space: nowrap;
+  }
+  .students-grid {
+    grid-template-columns: 1fr;
+  }
+  .acervo-grid {
+    grid-template-columns: 1fr;
+  }
+  .profile-work {
+    flex-direction: column;
+  }
+  .btn {
+    width: 100%;
+    text-align: center;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 380px) {
+  .topbar { padding: 0 12px; }
+  .brand span { font-size: 14px; letter-spacing: 0.15em; }
+  .brand small { font-size: 8px; }
+  .hero { padding: 24px 4vw; }
+  .masonry { columns: 1; }
 }
 
 /* ============================================
