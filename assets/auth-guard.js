@@ -75,8 +75,11 @@ window.updateNav = async function(user) {
     topbar.appendChild(authContainer);
   }
 
+  const existingMenuDot = authContainer.querySelector(".menu-dot");
+  const menuDotHTML = existingMenuDot ? existingMenuDot.outerHTML : "";
+
   if (!user) {
-    authContainer.innerHTML = '<a href="login.html" class="btn btn-sm btn-outline">Entrar</a>';
+    authContainer.innerHTML = menuDotHTML + '<a href="login.html" class="btn btn-sm btn-outline">Entrar</a>';
     return;
   }
 
@@ -104,7 +107,7 @@ window.updateNav = async function(user) {
     '</a>' +
     '<a href="#" id="nav-logout" class="nav-logout">Sair</a>';
 
-  authContainer.innerHTML = html;
+  authContainer.innerHTML = menuDotHTML + html;
 
   const logoutBtn = authContainer.querySelector("#nav-logout");
   if (logoutBtn) {
