@@ -10,6 +10,8 @@ ALTER TABLE public.artists ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.works ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.advisor_votes ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.advisor_requests ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.disciplines ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.enrollments ENABLE ROW LEVEL SECURITY;
 
 -- ============================================
 -- Policies: categories (público para leitura)
@@ -78,6 +80,45 @@ CREATE POLICY "advisor_requests_insert_own" ON public.advisor_requests FOR INSER
 DROP POLICY IF EXISTS "advisor_requests_update_advisor" ON public.advisor_requests;
 CREATE POLICY "advisor_requests_update_advisor" ON public.advisor_requests FOR UPDATE USING (
   EXISTS (SELECT 1 FROM public.artists WHERE id = advisor_id AND user_id = auth.uid())
+);
+
+-- ============================================
+-- Policies: disciplines (criadas por orientadores)
+-- ============================================
+DROP POLICY IF EXISTS "disciplines_select_public" ON public.disciplines;
+CREATE POLICY "disciplines_select_public" ON public.disciplines FOR SELECT USING (true);
+DROP POLICY IF EXISTS "disciplines_insert_advisor" ON public.disciplines;
+CREATE POLICY "disciplines_insert_advisor" ON public.disciplines FOR INSERT WITH CHECK (
+  EXISTS (SELECT 1 FROM public.artists WHERE id = advisor_id AND user_id = auth.uid() AND type = 'advisor')
+);
+DROP POLICY IF EXISTS "disciplines_update_advisor" ON public.disciplines;
+CREATE POLICY "disciplines_update_advisor" ON public.disciplines FOR UPDATE USING (
+  EXISTS (SELECT 1 FROM public.artists WHERE id = advisor_id AND user_id = auth.uid() AND type = 'advisor')
+);
+DROP POLICY IF EXISTS "disciplines_delete_advisor" ON public.disciplines;
+CREATE POLICY "disciplines_delete_advisor" ON public.disciplines FOR DELETE USING (
+  EXISTS (SELECT 1 FROM public.artists WHERE id = advisor_id AND user_id = auth.uid() AND type = 'advisor')
+);
+
+-- ============================================
+-- Policies: enrollments (inscrição de alunos)
+-- ============================================
+DROP POLICY IF EXISTS "enrollments_select_own" ON public.enrollments;
+CREATE POLICY "enrollments_select_own" ON public.enrollments FOR SELECT USING (
+  EXISTS (SELECT 1 FROM public.disciplines WHERE id = discipline_id AND advisor_id IN (
+    SELECT id FROM public.artists WHERE user_id = auth.uid()
+  ))
+  OR EXISTS (SELECT 1 FROM public.artists WHERE id = artist_id AND user_id = auth.uid())
+);
+DROP POLICY IF EXISTS "enrollments_insert_student" ON public.enrollments;
+CREATE POLICY "enrollments_insert_student" ON public.enrollments FOR INSERT WITH CHECK (
+  EXISTS (SELECT 1 FROM public.artists WHERE id = artist_id AND user_id = auth.uid() AND type = 'student')
+);
+DROP POLICY IF EXISTS "enrollments_update_advisor" ON public.enrollments;
+CREATE POLICY "enrollments_update_advisor" ON public.enrollments FOR UPDATE USING (
+  EXISTS (SELECT 1 FROM public.disciplines WHERE id = discipline_id AND advisor_id IN (
+    SELECT id FROM public.artists WHERE user_id = auth.uid() AND type = 'advisor'
+  ))
 );
 
 -- ============================================

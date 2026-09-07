@@ -95,8 +95,12 @@
               <article class="perfil-work">
                 <div>
                   <strong>${u.name}</strong>
-                  <small>${u.type} · ${u.role || "artista"} · ${new Date(u.created_at).toLocaleDateString()}</small>
-                  <div style="margin-top:10px; display:flex; gap:8px;">
+                  <small>${new Date(u.created_at).toLocaleDateString()}</small>
+                  <div style="margin-top:10px; display:flex; gap:8px; align-items:center;">
+                    <select class="approve-type" data-id="${u.id}" style="padding:8px; border:1px solid var(--line); border-radius:6px;">
+                      <option value="student">Aluno Artista</option>
+                      <option value="advisor">Orientador</option>
+                    </select>
                     <button class="btn btn-sm btn-dark approve-btn" data-id="${u.id}">Aprovar</button>
                     <button class="btn btn-sm btn-outline reject-btn" data-id="${u.id}">Recusar</button>
                   </div>
@@ -110,9 +114,14 @@
       content.querySelectorAll(".approve-btn").forEach(btn => {
         btn.addEventListener("click", async () => {
           const id = btn.dataset.id;
+          const card = btn.closest(".perfil-work");
+          const typeSelect = card.querySelector(".approve-type");
+          const type = typeSelect ? typeSelect.value : "student";
+          const role = type === "advisor" ? "orientador" : "artista";
+
           const { error } = await supabase
             .from("artists")
-            .update({ status: "approved", approved_by: me.id, approved_at: new Date().toISOString() })
+            .update({ status: "approved", type, role, approved_by: me.id, approved_at: new Date().toISOString() })
             .eq("id", id);
           if (error) {
             alert("Erro: " + error.message);
