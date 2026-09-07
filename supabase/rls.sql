@@ -28,6 +28,10 @@ DROP POLICY IF EXISTS "artists_insert_own" ON public.artists;
 CREATE POLICY "artists_insert_own" ON public.artists FOR INSERT WITH CHECK (auth.uid() = user_id);
 DROP POLICY IF EXISTS "artists_update_own" ON public.artists;
 CREATE POLICY "artists_update_own" ON public.artists FOR UPDATE USING (auth.uid() = user_id);
+DROP POLICY IF EXISTS "artists_update_moderator" ON public.artists;
+CREATE POLICY "artists_update_moderator" ON public.artists FOR UPDATE USING (
+  EXISTS (SELECT 1 FROM public.artists WHERE id = artists.id AND role IN ('adm', 'moderador') AND user_id = auth.uid())
+);
 DROP POLICY IF EXISTS "artists_delete_own" ON public.artists;
 CREATE POLICY "artists_delete_own" ON public.artists FOR DELETE USING (auth.uid() = user_id);
 

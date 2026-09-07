@@ -631,6 +631,132 @@
     });
   }
 
+  function renderSecurity(container) {
+    const a = artist || {};
+    container.innerHTML = `
+      <div class="perfil-section">
+        <h2>Segurança e conta</h2>
+        <div class="perfil-works">
+          <article class="perfil-work">
+            <div>
+              <strong>Alterar senha</strong>
+              <form id="password-form" class="perfil-form" style="margin-top:10px;">
+                <label><span>Senha atual</span><input type="password" id="sec-current-password" required></label>
+                <label><span>Nova senha</span><input type="password" id="sec-new-password" required minlength="6"></label>
+                <button type="submit" class="btn btn-dark">Atualizar senha</button>
+              </form>
+            </div>
+          </article>
+          <article class="perfil-work" style="margin-top:20px;">
+            <div>
+              <strong>Alterar e-mail</strong>
+              <form id="email-form" class="perfil-form" style="margin-top:10px;">
+                <label><span>Novo e-mail</span><input type="email" id="sec-new-email" required></label>
+                <button type="submit" class="btn btn-dark">Atualizar e-mail</button>
+              </form>
+            </div>
+          </article>
+          <article class="perfil-work" style="margin-top:20px; border-color:#ef4444;">
+            <div>
+              <strong>Desativar conta</strong>
+              <p class="muted">Você pode desativar sua conta a qualquer momento. Ela ficará oculta, mas os dados serão mantidos para fins legais.</p>
+              <button class="btn btn-outline" id="disable-account-btn" style="margin-top:10px; border-color:#ef4444; color:#ef4444;">Desativar minha conta</button>
+            </div>
+          </article>
+          <article class="perfil-work" style="margin-top:20px; border-color:#ef4444;">
+            <div>
+              <strong>Solicitar exclusão (LGPD)</strong>
+              <p class="muted">Solicite a exclusão definitiva dos seus dados pessoais conforme a LGPD.</p>
+              <button class="btn btn-outline" id="delete-account-btn" style="margin-top:10px; border-color:#ef4444; color:#ef4444;">Solicitar exclusão</button>
+            </div>
+          </article>
+        </div>
+      </div>
+    `;
+
+    const passwordForm = document.getElementById("password-form");
+    if (passwordForm) {
+      passwordForm.addEventListener("submit", async e => {
+        e.preventDefault();
+        const currentPassword = document.getElementById("sec-current-password").value;
+        const newPassword = document.getElementById("sec-new-password").value;
+
+        try {
+          const { error } = await window.supabaseClient.auth.updateUser({ password: newPassword });
+          if (error) {
+            alert("Erro: " + error.message);
+          } else {
+            alert("Senha atualizada!");
+            passwordForm.reset();
+          }
+        } catch (err) {
+          alert("Erro: " + err.message);
+        }
+      });
+    }
+
+    const emailForm = document.getElementById("email-form");
+    if (emailForm) {
+      emailForm.addEventListener("submit", async e => {
+        e.preventDefault();
+        const newEmail = document.getElementById("sec-new-email").value.trim();
+
+        try {
+          const { error } = await window.supabaseClient.auth.updateUser({ email: newEmail });
+          if (error) {
+            alert("Erro: " + error.message);
+          } else {
+            alert("E-mail atualizado!");
+            emailForm.reset();
+          }
+        } catch (err) {
+          alert("Erro: " + err.message);
+        }
+      });
+    }
+
+    const disableBtn = document.getElementById("disable-account-btn");
+    if (disableBtn) {
+      disableBtn.addEventListener("click", async () => {
+        const confirm = window.confirm("Tem certeza que deseja desativar sua conta? Você não poderá acessá-la até que seja reativada por um moderador.");
+        if (!confirm) return;
+
+        const { error } = await window.supabaseClient
+          .from("artists")
+          .update({ disabled: true, disabled_reason: "Desativada pelo próprio usuário" })
+          .eq("id", artist.id);
+
+        if (error) {
+          alert("Erro: " + error.message);
+        } else {
+          alert("Conta desativada. Você será redirecionado.");
+          window.location.href = "home.html";
+        }
+      });
+    }
+
+    const deleteBtn = document.getElementById("delete-account-btn");
+    if (deleteBtn) {
+      deleteBtn.addEventListener("click", async () => {
+        const confirm = window.confirm("Tem certeza que deseja solicitar a exclusão dos seus dados? Esta ação não pode ser desfeita.");
+        if (!confirm) return;
+
+        const reason = prompt("Motivo da solicitação (opcional):") || "";
+
+        const { error } = await window.supabaseClient
+          .from("artists")
+          .update({ disabled: true, disabled_reason: "Solicitação de exclusão LGPD: " + reason })
+          .eq("id", artist.id);
+
+        if (error) {
+          alert("Erro: " + error.message);
+        } else {
+          alert("Solicitação enviada! Nossa equipe entrará em contato em até 30 dias.");
+        }
+      });
+    }
+  }
+
   (async function boot() {
     try {
       while (typeof window.getCurrentUser !== "function") {
