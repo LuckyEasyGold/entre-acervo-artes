@@ -99,7 +99,8 @@ function bindForms() {
       const password = document.getElementById("reg-password").value;
       const confirm = document.getElementById("reg-password-confirm");
       const confirmValue = confirm ? confirm.value : "";
-      const type = document.getElementById("reg-type").value;
+      const typeInput = document.querySelector('input[name="reg-type"]:checked');
+      const type = typeInput ? typeInput.value : "student";
 
       if (password !== confirmValue) {
         showError(registerError, "As senhas não conferem.");
