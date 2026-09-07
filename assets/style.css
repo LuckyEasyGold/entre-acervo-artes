@@ -2545,8 +2545,8 @@ nav a.active::after {
   position: relative;
   padding: 100px 7vw 60px;
   text-align: center;
-  max-width: 1100px;
-  margin: 0 auto;
+  max-width: none;
+  margin: 0;
   overflow: hidden;
 }
 .home-hero-bg {
@@ -2563,6 +2563,8 @@ nav a.active::after {
 .home-hero-content {
   position: relative;
   z-index: 1;
+  max-width: 800px;
+  margin: 0 auto;
   color: var(--paper);
 }
 .home-hero .eyebrow {
@@ -2586,9 +2588,20 @@ nav a.active::after {
   color: rgba(255,255,255,0.85);
   line-height: 1.6;
 }
+.home-preview,
+.home-hub {
+  max-width: 800px;
+  margin: 0 auto;
+  padding-left: 20px;
+  padding-right: 20px;
+}
 .home-preview {
-  padding: 60px 7vw;
-  background: rgba(168, 85, 247, 0.04);
+  padding-top: 60px;
+  padding-bottom: 60px;
+}
+.home-hub {
+  padding-top: 40px;
+  padding-bottom: 80px;
 }
 .home-preview .section-head {
   display: flex;
