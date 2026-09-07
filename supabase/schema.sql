@@ -47,6 +47,7 @@ CREATE TABLE IF NOT EXISTS public.artists (
 CREATE TABLE IF NOT EXISTS public.works (
   id TEXT PRIMARY KEY,
   artist_id TEXT NOT NULL REFERENCES public.artists(id) ON DELETE CASCADE,
+  advisor_id TEXT REFERENCES public.artists(id) ON DELETE SET NULL,
   title TEXT NOT NULL,
   category TEXT NOT NULL,
   year INT,

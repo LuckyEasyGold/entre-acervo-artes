@@ -44,6 +44,10 @@
     return items.length ? '<div class="social-icons">' + items.join("") + '</div>' : "";
   }
 
+  function tabButton(label, key, active) {
+    return '<button class="profile-tab ' + (active ? 'active' : '') + '" data-tab="' + key + '">' + label + '</button>';
+  }
+
   var currentIsOwner = false;
 
   function renderAbout(artist, isOwner) {
@@ -133,19 +137,6 @@
     '</div>';
   }
 
-  function navigateArtist(dir) {
-    if (!allArtists.length) return;
-    const idx = allArtists.indexOf(currentArtist);
-    let next = idx + dir;
-    if (next < 0) next = allArtists.length - 1;
-    if (next >= allArtists.length) next = 0;
-    const a = allArtists[next];
-    if (a) {
-      window.history.replaceState(null, "", "?id=" + a.id);
-      renderArtist(a, currentIsOwner);
-    }
-  }
-
   async function checkOwnership(artistId) {
     try {
       const { user } = await window.getCurrentUser();
@@ -179,20 +170,11 @@
 
     main.innerHTML = '<div class="profile-layout">' +
       '<div class="profile-nav">' +
-        '<button class="profile-arrow profile-prev" id="profile-prev" aria-label="Anterior">‹</button>' +
-        '<a class="profile-close" href="home.html" aria-label="Fechar">✕</a>' +
-        '<button class="profile-arrow profile-next" id="profile-next" aria-label="Próximo">›</button>' +
+        '<a class="profile-back" href="home.html" aria-label="Voltar">← Voltar</a>' +
       '</div>' +
       '<div class="profile-tabs">' + tabs.join("") + '</div>' +
       '<div class="profile-panes">' + panes + '</div>' +
     '</div>';
-
-    document.getElementById("profile-close").addEventListener("click", function(e) {
-      e.preventDefault();
-      window.history.back();
-    });
-    document.getElementById("profile-prev").addEventListener("click", function() { navigateArtist(-1); });
-    document.getElementById("profile-next").addEventListener("click", function() { navigateArtist(1); });
 
     main.querySelectorAll(".profile-tab").forEach(function(t) {
       t.addEventListener("click", function() {
@@ -210,7 +192,7 @@
         var s = findArtist(sid);
         if (s) {
           window.history.replaceState(null, "", "?id=" + s.id);
-          renderArtist(s);
+          renderArtist(s, currentIsOwner);
         }
       });
     });
@@ -256,8 +238,6 @@
   document.addEventListener("keydown", function(e) {
     if (!currentArtist) return;
     if (e.key === "Escape") window.history.back();
-    if (e.key === "ArrowLeft") navigateArtist(-1);
-    if (e.key === "ArrowRight") navigateArtist(1);
   });
 
   load();
