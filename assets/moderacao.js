@@ -28,7 +28,7 @@
 
     const { data: me } = await supabase
       .from("artists")
-      .select("id, role, status")
+      .select("id, role, status, type, disabled")
       .eq("user_id", user.id)
       .single();
 
@@ -37,17 +37,28 @@
       return;
     }
 
+    if (me.disabled) {
+      if (main) main.innerHTML = "<p>Sua conta está desativada.</p>";
+      return;
+    }
+
     const { data: pending } = await supabase
       .from("artists")
-      .select("id, name, type, role, status, created_at, moderator_votes")
+      .select("id, name, type, role, status, created_at, moderator_votes, disabled")
       .eq("status", "pending")
       .order("created_at", { ascending: true });
 
-    const { data: artists } = await supabase
+    const { data: allUsers } = await supabase
       .from("artists")
-      .select("id, name, type, role, status, moderator_votes")
+      .select("id, name, type, role, status, created_at, moderator_votes, disabled")
       .neq("role", "adm")
-      .order("moderator_votes", { ascending: false });
+      .order("created_at", { ascending: false });
+
+    const { data: moderators } = await supabase
+      .from("artists")
+      .select("id, name, type, role, status, created_at, moderator_votes")
+      .in("role", ["adm", "moderador"])
+      .order("created_at", { ascending: false });
 
     if (loadingEl) loadingEl.style.display = "none";
 
@@ -56,8 +67,9 @@
     let html = `
       <div class="perfil-layout">
         <aside class="perfil-sidebar">
-          <button class="btn-back" onclick="window.history.back()">? Voltar</button>
+          <button class="btn-back" onclick="window.history.back()">← Voltar</button>
           <button class="perfil-nav-item active" data-section="pending">Pendentes (${pending?.length || 0})</button>
+          <button class="perfil-nav-item" data-section="all">Todos usuários</button>
           <button class="perfil-nav-item" data-section="moderadores">Moderadores</button>
         </aside>
         <div class="perfil-content" id="perfil-content"></div>
@@ -74,7 +86,8 @@
         btn.classList.add("active");
         const section = btn.dataset.section;
         if (section === "pending") renderPending(pending || []);
-        if (section === "moderadores") renderModeradores(artists || []);
+        if (section === "all") renderAll(allUsers || []);
+        if (section === "moderadores") renderModeradores(moderators || []);
       });
     });
 
@@ -89,17 +102,17 @@
       content.innerHTML = `
         <div class="perfil-section">
           <h2>Cadastros pendentes</h2>
-          <p class="muted">Aprove ou recuse contas novas. Apenas orientadores e admins podem aprovar.</p>
+          <p class="muted">Aprove ou recuse contas novas. Você também pode definir o tipo do usuário.</p>
           <div class="perfil-works">
             ${list.map(u => `
               <article class="perfil-work">
                 <div>
                   <strong>${u.name}</strong>
                   <small>${new Date(u.created_at).toLocaleDateString()}</small>
-                  <div style="margin-top:10px; display:flex; gap:8px; align-items:center;">
+                  <div style="margin-top:10px; display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
                     <select class="approve-type" data-id="${u.id}" style="padding:8px; border:1px solid var(--line); border-radius:6px;">
-                      <option value="student">Aluno Artista</option>
-                      <option value="advisor">Orientador</option>
+                      <option value="student" ${u.type === 'student' ? 'selected' : ''}>Aluno Artista</option>
+                      <option value="advisor" ${u.type === 'advisor' ? 'selected' : ''}>Orientador</option>
                     </select>
                     <button class="btn btn-sm btn-dark approve-btn" data-id="${u.id}">Aprovar</button>
                     <button class="btn btn-sm btn-outline reject-btn" data-id="${u.id}">Recusar</button>
@@ -151,79 +164,151 @@
       });
     }
 
-    function renderModeradores(list) {
+    function renderAll(list) {
       if (!content) return;
-      const candidatos = list.filter(a => a.role === "artista" && a.status === "approved");
       content.innerHTML = `
         <div class="perfil-section">
-          <h2>Elevar a moderador</h2>
-          <p class="muted">São necessários 3 votos de orientadores para elevar um artista a moderador.</p>
+          <h2>Todos os usuários</h2>
+          <p class="muted">Gerencie todos os usuários do sistema. Você pode aprovar, recusar, elevar a moderador ou desativar contas.</p>
           <div class="perfil-works">
-            ${candidatos.map(u => `
+            ${list.map(u => `
               <article class="perfil-work">
                 <div>
                   <strong>${u.name}</strong>
-                  <small>Votos: ${u.moderator_votes || 0}/3</small>
-                  <div style="margin-top:10px;">
-                    <button class="btn btn-sm btn-dark vote-btn" data-id="${u.id}">Votar para moderador</button>
+                  <small>${u.type === 'advisor' ? 'Orientador' : 'Aluno'} · ${u.role || 'artista'} · ${u.status} ${u.disabled ? '· DESATIVADA' : ''}</small>
+                  <div style="margin-top:10px; display:flex; gap:8px; flex-wrap:wrap;">
+                    ${u.status === 'pending' ? `
+                      <select class="approve-type" data-id="${u.id}" style="padding:8px; border:1px solid var(--line); border-radius:6px;">
+                        <option value="student" ${u.type === 'student' ? 'selected' : ''}>Aluno</option>
+                        <option value="advisor" ${u.type === 'advisor' ? 'selected' : ''}>Orientador</option>
+                      </select>
+                      <button class="btn btn-sm btn-dark approve-btn" data-id="${u.id}">Aprovar</button>
+                      <button class="btn btn-sm btn-outline reject-btn" data-id="${u.id}">Recusar</button>
+                    ` : ''}
+                    ${u.status === 'approved' && u.role !== 'moderador' && u.role !== 'adm' ? `
+                      <button class="btn btn-sm btn-dark promote-btn" data-id="${u.id}">Elevar a moderador</button>
+                    ` : ''}
+                    ${!u.disabled ? `
+                      <button class="btn btn-sm btn-outline disable-btn" data-id="${u.id}">Desativar conta</button>
+                    ` : `
+                      <button class="btn btn-sm btn-dark enable-btn" data-id="${u.id}">Reativar conta</button>
+                    `}
                   </div>
                 </div>
               </article>
-            `).join("") || "<p>Nenhum candidato disponível.</p>"}
+            `).join("")}
           </div>
         </div>
       `;
 
-      content.querySelectorAll(".vote-btn").forEach(btn => {
+      content.querySelectorAll(".approve-btn").forEach(btn => {
         btn.addEventListener("click", async () => {
           const id = btn.dataset.id;
-          const { data: existing } = await supabase
-            .from("advisor_votes")
-            .select("id")
-            .eq("artist_id", id)
-            .eq("advisor_id", me.id)
-            .single();
+          const card = btn.closest(".perfil-work");
+          const typeSelect = card.querySelector(".approve-type");
+          const type = typeSelect ? typeSelect.value : "student";
+          const role = type === "advisor" ? "orientador" : "artista";
 
-          if (existing) {
-            alert("Você já votou neste candidato.");
-            return;
-          }
-
-          const voteId = "vote-" + Date.now() + "-" + Math.random().toString(36).slice(2, 8);
-          const { error: voteErr } = await supabase
-            .from("advisor_votes")
-            .insert({ id: voteId, artist_id: id, advisor_id: me.id });
-
-          if (voteErr) {
-            alert("Erro ao votar: " + voteErr.message);
-            return;
-          }
-
-          const { data: current } = await supabase
+          const { error } = await supabase
             .from("artists")
-            .select("moderator_votes")
-            .eq("id", id)
-            .single();
-
-          const newVotes = (current?.moderator_votes || 0) + 1;
-          const updates = { moderator_votes: newVotes };
-          if (newVotes >= 3) {
-            updates.role = "moderador";
-          }
-
-          const { error: updateErr } = await supabase
-            .from("artists")
-            .update(updates)
+            .update({ status: "approved", type, role, approved_by: me.id, approved_at: new Date().toISOString() })
             .eq("id", id);
-
-          if (updateErr) {
-            alert("Erro ao atualizar: " + updateErr.message);
+          if (error) {
+            alert("Erro: " + error.message);
           } else {
-            alert(newVotes >= 3 ? "Candidato elevado a moderador!" : "Voto registrado.");
+            btn.disabled = true;
+            btn.textContent = "Aprovado";
             setTimeout(() => location.reload(), 600);
           }
         });
       });
+
+      content.querySelectorAll(".reject-btn").forEach(btn => {
+        btn.addEventListener("click", async () => {
+          const id = btn.dataset.id;
+          const { error } = await supabase
+            .from("artists")
+            .update({ status: "rejected" })
+            .eq("id", id);
+          if (error) {
+            alert("Erro: " + error.message);
+          } else {
+            btn.disabled = true;
+            btn.textContent = "Recusado";
+            setTimeout(() => location.reload(), 600);
+          }
+        });
+      });
+
+      content.querySelectorAll(".promote-btn").forEach(btn => {
+        btn.addEventListener("click", async () => {
+          const id = btn.dataset.id;
+          const { error } = await supabase
+            .from("artists")
+            .update({ role: "moderador" })
+            .eq("id", id);
+          if (error) {
+            alert("Erro: " + error.message);
+          } else {
+            alert("Usuário elevado a moderador!");
+            setTimeout(() => location.reload(), 600);
+          }
+        });
+      });
+
+      content.querySelectorAll(".disable-btn").forEach(btn => {
+        btn.addEventListener("click", async () => {
+          const id = btn.dataset.id;
+          const reason = prompt("Motivo da desativação (opcional):") || "";
+          const { error } = await supabase
+            .from("artists")
+            .update({ disabled: true, disabled_reason: reason || null })
+            .eq("id", id);
+          if (error) {
+            alert("Erro: " + error.message);
+          } else {
+            alert("Conta desativada.");
+            setTimeout(() => location.reload(), 600);
+          }
+        });
+      });
+
+      content.querySelectorAll(".enable-btn").forEach(btn => {
+        btn.addEventListener("click", async () => {
+          const id = btn.dataset.id;
+          const { error } = await supabase
+            .from("artists")
+            .update({ disabled: false, disabled_reason: null })
+            .eq("id", id);
+          if (error) {
+            alert("Erro: " + error.message);
+          } else {
+            alert("Conta reativada.");
+            setTimeout(() => location.reload(), 600);
+          }
+        });
+      });
+    }
+
+    function renderModeradores(list) {
+      if (!content) return;
+      content.innerHTML = `
+        <div class="perfil-section">
+          <h2>Moderadores</h2>
+          <p class="muted">Lista de administradores e moderadores do sistema.</p>
+          <div class="perfil-works">
+            ${list.map(u => `
+              <article class="perfil-work">
+                <div>
+                  <strong>${u.name}</strong>
+                  <small>${u.type === 'advisor' ? 'Orientador' : 'Aluno'} · ${u.role} · ${u.status}</small>
+                  <small>Votos: ${u.moderator_votes || 0}</small>
+                </div>
+              </article>
+            `).join("") || "<p>Nenhum moderador.</p>"}
+          </div>
+        </div>
+      `;
     }
   } catch (err) {
     console.error("[moderacao] error:", err);

@@ -37,6 +37,8 @@ CREATE TABLE IF NOT EXISTS public.artists (
   bio TEXT,
   curriculum TEXT,
   social JSONB DEFAULT '{}'::jsonb,
+  disabled BOOLEAN DEFAULT FALSE,
+  disabled_reason TEXT,
   created_at TIMESTAMPTZ DEFAULT now(),
   updated_at TIMESTAMPTZ DEFAULT now()
 );

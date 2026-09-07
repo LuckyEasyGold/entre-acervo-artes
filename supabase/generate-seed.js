@@ -5,6 +5,7 @@ const works = JSON.parse(fs.readFileSync('C:/projetos/curso_arte/data/works.json
 function sqlValue(v) {
   if (v === null || v === undefined) return 'NULL';
   if (typeof v === 'number') return String(v);
+  if (typeof v === 'boolean') return v ? 'TRUE' : 'FALSE';
   return "'" + String(v).replace(/'/g, "''") + "'";
 }
 
@@ -21,7 +22,7 @@ function sqlTextArray(arr) {
 
 let sql = '';
 
-sql += "INSERT INTO public.artists (id, name, type, role, status, title, area, subjects, image, bio, curriculum, social, advisor_id, approved_by, approved_at, moderator_votes, course, created_at, updated_at) VALUES\n";
+sql += "INSERT INTO public.artists (id, name, type, role, status, title, area, subjects, image, bio, curriculum, social, advisor_id, approved_by, approved_at, moderator_votes, course, disabled, disabled_reason, created_at, updated_at) VALUES\n";
 
 const artistRows = artists.map(a => {
   const advisor_id = a.advisorId || a.advisor_id || null;
@@ -47,13 +48,15 @@ const artistRows = artists.map(a => {
     sqlValue(approved_at),
     sqlValue(0),
     sqlValue(a.course),
+    'FALSE',
+    'NULL',
     'now()',
     'now()'
   ].join(', ') + ")";
 }).join(",\n");
 
 sql += artistRows + "\n";
-sql += "ON CONFLICT (id) DO UPDATE SET name=EXCLUDED.name, type=EXCLUDED.type, role=EXCLUDED.role, status=EXCLUDED.status, title=EXCLUDED.title, area=EXCLUDED.area, subjects=EXCLUDED.subjects, image=EXCLUDED.image, bio=EXCLUDED.bio, curriculum=EXCLUDED.curriculum, social=EXCLUDED.social, advisor_id=EXCLUDED.advisor_id, updated_at=now();\n\n";
+sql += "ON CONFLICT (id) DO UPDATE SET name=EXCLUDED.name, type=EXCLUDED.type, role=EXCLUDED.role, status=EXCLUDED.status, title=EXCLUDED.title, area=EXCLUDED.area, subjects=EXCLUDED.subjects, image=EXCLUDED.image, bio=EXCLUDED.bio, curriculum=EXCLUDED.curriculum, social=EXCLUDED.social, advisor_id=EXCLUDED.advisor_id, disabled=EXCLUDED.disabled, disabled_reason=EXCLUDED.disabled_reason, updated_at=now();\n\n";
 
 sql += "INSERT INTO public.works (id, artist_id, title, category, year, description, image, file_url, file_type, youtube_url, external_links, status, visibility, views, downloads, created_at, updated_at) VALUES\n";
 
