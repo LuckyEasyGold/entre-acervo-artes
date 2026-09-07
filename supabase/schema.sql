@@ -92,6 +92,32 @@ CREATE TABLE IF NOT EXISTS public.advisor_requests (
 );
 
 -- ============================================
+-- Tabela: disciplines (criadas por orientadores)
+-- ============================================
+CREATE TABLE IF NOT EXISTS public.disciplines (
+  id TEXT PRIMARY KEY,
+  advisor_id TEXT NOT NULL REFERENCES public.artists(id) ON DELETE CASCADE,
+  name TEXT NOT NULL,
+  description TEXT,
+  status TEXT DEFAULT 'active' CHECK (status IN ('active', 'closed')),
+  created_at TIMESTAMPTZ DEFAULT now(),
+  updated_at TIMESTAMPTZ DEFAULT now()
+);
+
+-- ============================================
+-- Tabela: enrollments (inscrição de alunos em disciplinas)
+-- ============================================
+CREATE TABLE IF NOT EXISTS public.enrollments (
+  id TEXT PRIMARY KEY,
+  discipline_id TEXT NOT NULL REFERENCES public.disciplines(id) ON DELETE CASCADE,
+  artist_id TEXT NOT NULL REFERENCES public.artists(id) ON DELETE CASCADE,
+  status TEXT DEFAULT 'pending' CHECK (status IN ('pending', 'approved', 'rejected')),
+  message TEXT,
+  created_at TIMESTAMPTZ DEFAULT now(),
+  UNIQUE(discipline_id, artist_id)
+);
+
+-- ============================================
 -- Triggers
 -- ============================================
 CREATE OR REPLACE FUNCTION public.set_updated_at()
@@ -107,6 +133,9 @@ CREATE TRIGGER artists_updated_at BEFORE UPDATE ON public.artists FOR EACH ROW E
 
 DROP TRIGGER IF EXISTS works_updated_at ON public.works;
 CREATE TRIGGER works_updated_at BEFORE UPDATE ON public.works FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
+
+DROP TRIGGER IF EXISTS disciplines_updated_at ON public.disciplines;
+CREATE TRIGGER disciplines_updated_at BEFORE UPDATE ON public.disciplines FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
 
 -- ============================================
 -- Seed: categorias padrão

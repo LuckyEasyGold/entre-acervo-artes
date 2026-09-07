@@ -62,3 +62,19 @@ INSERT INTO public.works (id, artist_id, title, category, year, description, ima
 ('work-033', 'adv-005', 'Corpo Político', 'performance', 2023, 'Performance solo sobre corpo e política.', 'https://images.unsplash.com/photo-1508700115892-45ecd05ae2ad?auto=format&fit=crop&w=800&q=80', 'https://images.unsplash.com/photo-1508700115892-45ecd05ae2ad?auto=format&fit=crop&w=800&q=80', 'image', '', '[{"title":"Site oficial","url":"https://julianapereira.art.br/corpo-politico","type":"external"}]'::jsonb, 'published', 'public', 0, 0, now(), now()),
 ('work-034', 'adv-005', 'Movimento e Cidade', 'danca', 2022, 'Vídeo-ensaio sobre dança e espaço urbano.', 'https://images.unsplash.com/photo-1535525153412-5a06039fc5a4?auto=format&fit=crop&w=800&q=80', 'https://images.unsplash.com/photo-1535525153412-5a06039fc5a4?auto=format&fit=crop&w=800&q=80', 'image', '', '[{"title":"Vimeo","url":"https://vimeo.com/julianapereira/movimento","type":"external"}]'::jsonb, 'published', 'public', 0, 0, now(), now())
 ON CONFLICT (id) DO UPDATE SET title=EXCLUDED.title, category=EXCLUDED.category, year=EXCLUDED.year, description=EXCLUDED.description, image=EXCLUDED.image, file_url=EXCLUDED.file_url, file_type=EXCLUDED.file_type, youtube_url=EXCLUDED.youtube_url, external_links=EXCLUDED.external_links, status=EXCLUDED.status, visibility=EXCLUDED.visibility, updated_at=now();
+
+INSERT INTO public.disciplines (id, advisor_id, name, description, status, created_at, updated_at) VALUES
+('disc-001', 'adv-001', 'Pintura I', 'Introdução às técnicas de pintura em tela e papel.', 'active', now(), now()),
+('disc-002', 'adv-001', 'Gravura em metal', 'Processos de gravura em metal e impressão.', 'active', now(), now()),
+('disc-003', 'adv-002', 'Fotografia Documental', 'Documentação fotográfica de narrativas locais.', 'active', now(), now()),
+('disc-004', 'adv-003', 'Escultura I', 'Experimentação com materiais escultóricos.', 'active', now(), now()),
+('disc-005', 'adv-005', 'Performance e Corpo', 'Práticas performáticas e políticas do corpo.', 'active', now(), now())
+ON CONFLICT (id) DO UPDATE SET name=EXCLUDED.name, description=EXCLUDED.description, status=EXCLUDED.status, updated_at=now();
+
+INSERT INTO public.enrollments (id, discipline_id, artist_id, status, message, created_at) VALUES
+('enr-001', 'disc-001', 'stu-001', 'pending', 'Gostaria de cursar Pintura I.', now()),
+('enr-002', 'disc-002', 'stu-001', 'pending', 'Interesse em gravura.', now()),
+('enr-003', 'disc-001', 'stu-003', 'pending', 'Sempre quis aprender pintura.', now()),
+('enr-004', 'disc-003', 'stu-005', 'pending', 'Quero desenvolver documentário.', now()),
+('enr-005', 'disc-005', 'stu-017', 'pending', 'Tenho experiência em performance e quero me aprofundar.', now())
+ON CONFLICT (id) DO UPDATE SET status=EXCLUDED.status, message=EXCLUDED.message;

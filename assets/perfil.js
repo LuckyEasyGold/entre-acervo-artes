@@ -74,12 +74,13 @@
   }
 
   function renderSidebar() {
+    const isAdvisor = artist && artist.type === "advisor";
     const html = `
       <div class="perfil-layout">
         <aside class="perfil-sidebar">
           <button class="btn-back" onclick="window.history.back()">← Voltar</button>
           <button class="perfil-nav-item active" data-section="profile">Meu Perfil</button>
-          <button class="perfil-nav-item" data-section="advisor">Orientador</button>
+          ${isAdvisor ? '<button class="perfil-nav-item" data-section="disciplines">Minhas Disciplinas</button>' : '<button class="perfil-nav-item" data-section="orientation">Disciplinas e Orientação</button>'}
           <button class="perfil-nav-item" data-section="publish">Publicar obra</button>
           <button class="perfil-nav-item" data-section="works">Meu acervo</button>
           <button class="perfil-nav-item" data-section="security">Segurança</button>
@@ -107,8 +108,11 @@
       case "profile":
         renderProfile(content);
         break;
-      case "advisor":
-        renderAdvisor(content);
+      case "disciplines":
+        renderDisciplines(content);
+        break;
+      case "orientation":
+        renderOrientation(content);
         break;
       case "publish":
         renderPublish(content);
@@ -129,43 +133,36 @@
       ? [a.title, a.area].filter(Boolean).join(" · ")
       : (a.course || "");
 
-    container.innerHTML = `
-      <div class="perfil-section">
-        <h2>Editar perfil</h2>
-        <form id="profile-form" class="perfil-form">
-          <label><span>Nome</span><input type="text" id="p-name" value="${escapeHtml(a.name || '')}" required></label>
-          <label><span>Bio</span><textarea id="p-bio" rows="3">${escapeHtml(a.bio || '')}</textarea></label>
-          <label><span>Foto de perfil (URL)</span><input type="url" id="p-image" value="${escapeHtml(a.image || '')}" placeholder="https://..."></label>
-          <label><span>Tipo</span>
-            <select id="p-type">
-              <option value="student" ${a.type === 'student' ? 'selected' : ''}>Aluno Artista</option>
-              <option value="advisor" ${a.type === 'advisor' ? 'selected' : ''}>Orientador</option>
-            </select>
-          </label>
-          <label><span>Curso</span><input type="text" id="p-course" value="${escapeHtml(a.course || '')}" placeholder="Artes Visuais"></label>
-          <label><span>Título / Grau</span><input type="text" id="p-title" value="${escapeHtml(a.title || '')}" placeholder="Ex.: Mestre, Doutor..."></label>
-          <label><span>Área de atuação</span><input type="text" id="p-area" value="${escapeHtml(a.area || '')}" placeholder="Pintura contemporânea"></label>
-          <label><span>Currículo</span><textarea id="p-curriculum" rows="4">${escapeHtml(a.curriculum || '')}</textarea></label>
-          <label><span>Disciplinas (separadas por vírgula)</span><input type="text" id="p-subjects" value="${escapeHtml((a.subjects || []).join(', '))}" placeholder="Pintura I, Gravura..."></label>
-          <button type="submit" class="btn btn-dark">Salvar perfil</button>
-        </form>
-      </div>
-    `;
+      container.innerHTML = `
+        <div class="perfil-section">
+          <h2>Editar perfil</h2>
+          <form id="profile-form" class="perfil-form">
+            <label><span>Nome</span><input type="text" id="p-name" value="${escapeHtml(a.name || '')}" required></label>
+            <label><span>Bio</span><textarea id="p-bio" rows="3">${escapeHtml(a.bio || '')}</textarea></label>
+            <label><span>Foto de perfil (URL)</span><input type="url" id="p-image" value="${escapeHtml(a.image || '')}" placeholder="https://..."></label>
+            <label><span>Curso</span><input type="text" id="p-course" value="${escapeHtml(a.course || '')}" placeholder="Artes Visuais"></label>
+            <label><span>Título / Grau</span><input type="text" id="p-title" value="${escapeHtml(a.title || '')}" placeholder="Ex.: Mestre, Doutor..."></label>
+            <label><span>Área de atuação</span><input type="text" id="p-area" value="${escapeHtml(a.area || '')}" placeholder="Pintura contemporânea"></label>
+            <label><span>Currículo</span><textarea id="p-curriculum" rows="4">${escapeHtml(a.curriculum || '')}</textarea></label>
+            <label><span>Disciplinas (separadas por vírgula)</span><input type="text" id="p-subjects" value="${escapeHtml((a.subjects || []).join(', '))}" placeholder="Pintura I, Gravura..."></label>
+            <button type="submit" class="btn btn-dark">Salvar perfil</button>
+          </form>
+        </div>
+      `;
 
-    document.getElementById("profile-form").addEventListener("submit", async e => {
-      e.preventDefault();
-      const data = {
-        name: document.getElementById("p-name").value.trim(),
-        bio: document.getElementById("p-bio").value.trim(),
-        image: document.getElementById("p-image").value.trim(),
-        type: document.getElementById("p-type").value,
-        course: document.getElementById("p-course").value.trim(),
-        title: document.getElementById("p-title").value.trim(),
-        area: document.getElementById("p-area").value.trim(),
-        curriculum: document.getElementById("p-curriculum").value.trim(),
-        subjects: document.getElementById("p-subjects").value.split(",").map(s => s.trim()).filter(Boolean),
-        updated_at: new Date().toISOString()
-      };
+      document.getElementById("profile-form").addEventListener("submit", async e => {
+        e.preventDefault();
+        const data = {
+          name: document.getElementById("p-name").value.trim(),
+          bio: document.getElementById("p-bio").value.trim(),
+          image: document.getElementById("p-image").value.trim(),
+          course: document.getElementById("p-course").value.trim(),
+          title: document.getElementById("p-title").value.trim(),
+          area: document.getElementById("p-area").value.trim(),
+          curriculum: document.getElementById("p-curriculum").value.trim(),
+          subjects: document.getElementById("p-subjects").value.split(",").map(s => s.trim()).filter(Boolean),
+          updated_at: new Date().toISOString()
+        };
 
       try {
         if (artist && artist.id) {
@@ -460,6 +457,178 @@
       .replace(/>/g, "&gt;")
       .replace(/"/g, "&quot;")
       .replace(/'/g, "&#039;");
+  }
+
+  async function loadAdvisors() {
+    const supabase = window.supabaseClient;
+    if (!supabase) return [];
+    try {
+      const { data } = await supabase
+        .from("artists")
+        .select("id, name, area, title")
+        .eq("type", "advisor")
+        .eq("status", "approved");
+      return data || [];
+    } catch (err) {
+      console.warn("[perfil] load advisors warning:", err);
+      return [];
+    }
+  }
+
+  async function renderDisciplines(container) {
+    const a = artist || {};
+    if (!a.id) {
+      container.innerHTML = "<p>Complete seu perfil primeiro.</p>";
+      return;
+    }
+
+    const supabase = window.supabaseClient;
+    if (!supabase) {
+      container.innerHTML = "<p>Supabase não configurado.</p>";
+      return;
+    }
+
+    const { data: disciplines } = await supabase
+      .from("disciplines")
+      .select("*")
+      .eq("advisor_id", a.id)
+      .order("created_at", { ascending: false });
+
+    const { data: enrollments } = await supabase
+      .from("enrollments")
+      .select("*, artist:artists(id, name, course)")
+      .in("discipline_id", (disciplines || []).map(d => d.id))
+      .order("created_at", { ascending: true });
+
+    container.innerHTML = `
+      <div class="perfil-section">
+        <h2>Minhas disciplinas</h2>
+        <p class="muted">Crie disciplinas e gerencie inscrições de alunos.</p>
+        <button class="btn btn-dark" id="create-disc-btn" style="margin-bottom:16px;">Criar disciplina</button>
+        <div id="disc-form" style="display:none; margin-bottom:16px;">
+          <form id="discipline-form" class="perfil-form">
+            <label><span>Nome</span><input type="text" id="disc-name" required></label>
+            <label><span>Descrição</span><textarea id="disc-description" rows="3"></textarea></label>
+            <button type="submit" class="btn btn-dark">Salvar</button>
+          </form>
+        </div>
+        <div class="perfil-works">
+          ${(disciplines || []).map(d => `
+            <article class="perfil-work">
+              <div>
+                <strong>${d.name}</strong>
+                <small>${d.status === 'active' ? 'Ativa' : 'Fechada'} · ${new Date(d.created_at).toLocaleDateString()}</small>
+                <p>${d.description || ''}</p>
+                <div style="margin-top:10px; display:flex; gap:8px;">
+                  <button class="btn btn-sm btn-dark toggle-disc" data-id="${d.id}" data-status="${d.status}">
+                    ${d.status === 'active' ? 'Fechar' : 'Reabrir'}
+                  </button>
+                </div>
+              </div>
+            </article>
+          `).join("") || "<p>Você ainda não criou disciplinas.</p>"}
+        </div>
+        <h3 style="margin-top:32px;">Inscrições</h3>
+        <div class="perfil-works">
+          ${(enrollments || []).map(e => `
+            <article class="perfil-work">
+              <div>
+                <strong>${e.artist?.name || 'Aluno'}</strong>
+                <small>${e.artist?.course || ''} · ${e.status}</small>
+                <p>${e.message || ''}</p>
+                ${e.status === 'pending' ? `
+                  <div style="margin-top:10px; display:flex; gap:8px;">
+                    <button class="btn btn-sm btn-dark approve-enr" data-id="${e.id}">Aprovar</button>
+                    <button class="btn btn-sm btn-outline reject-enr" data-id="${e.id}">Recusar</button>
+                  </div>
+                ` : ''}
+              </div>
+            </article>
+          `).join("") || "<p>Nenhuma inscrição.</p>"}
+        </div>
+      </div>
+    `;
+
+    const createBtn = document.getElementById("create-disc-btn");
+    const formDiv = document.getElementById("disc-form");
+    if (createBtn && formDiv) {
+      createBtn.addEventListener("click", () => {
+        formDiv.style.display = formDiv.style.display === "none" ? "block" : "none";
+      });
+
+      const discForm = document.getElementById("discipline-form");
+      if (discForm) {
+        discForm.addEventListener("submit", async (e) => {
+          e.preventDefault();
+          const name = document.getElementById("disc-name").value.trim();
+          const description = document.getElementById("disc-description").value.trim();
+          const id = "disc-" + Date.now() + "-" + Math.random().toString(36).slice(2, 8);
+
+          const { error } = await supabase.from("disciplines").insert({
+            id,
+            advisor_id: a.id,
+            name,
+            description,
+            status: "active"
+          });
+
+          if (error) {
+            alert("Erro: " + error.message);
+          } else {
+            alert("Disciplina criada!");
+            window.location.reload();
+          }
+        });
+      }
+    }
+
+    container.querySelectorAll(".toggle-disc").forEach(btn => {
+      btn.addEventListener("click", async () => {
+        const id = btn.dataset.id;
+        const status = btn.dataset.status === "active" ? "closed" : "active";
+        const { error } = await supabase
+          .from("disciplines")
+          .update({ status })
+          .eq("id", id);
+        if (error) {
+          alert("Erro: " + error.message);
+        } else {
+          window.location.reload();
+        }
+      });
+    });
+
+    container.querySelectorAll(".approve-enr").forEach(btn => {
+      btn.addEventListener("click", async () => {
+        const id = btn.dataset.id;
+        const { error } = await supabase
+          .from("enrollments")
+          .update({ status: "approved" })
+          .eq("id", id);
+        if (error) {
+          alert("Erro: " + error.message);
+        } else {
+          alert("Inscrição aprovada!");
+          window.location.reload();
+        }
+      });
+    });
+
+    container.querySelectorAll(".reject-enr").forEach(btn => {
+      btn.addEventListener("click", async () => {
+        const id = btn.dataset.id;
+        const { error } = await supabase
+          .from("enrollments")
+          .update({ status: "rejected" })
+          .eq("id", id);
+        if (error) {
+          alert("Erro: " + error.message);
+        } else {
+          alert("Inscrição recusada!");
+          window.location.reload();
+        }
+      });
+    });
   }
 
   (async function boot() {

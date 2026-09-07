@@ -99,8 +99,6 @@ function bindForms() {
       const password = document.getElementById("reg-password").value;
       const confirm = document.getElementById("reg-password-confirm");
       const confirmValue = confirm ? confirm.value : "";
-      const typeInput = document.querySelector('input[name="reg-type"]:checked');
-      const type = typeInput ? typeInput.value : "student";
 
       if (password !== confirmValue) {
         showError(registerError, "As senhas não conferem.");
@@ -108,7 +106,7 @@ function bindForms() {
       }
 
       try {
-        const { data, error } = await window.signUp(email, password, { name, type });
+        const { data, error } = await window.signUp(email, password, { name });
         if (error) {
           showError(registerError, "Não foi possível criar a conta. Tente novamente.");
         } else if (data && data.user) {
@@ -119,8 +117,6 @@ function bindForms() {
                 id: "artist-" + Date.now() + "-" + Math.random().toString(36).slice(2, 8),
                 user_id: data.user.id,
                 name: name,
-                type: type,
-                role: type === "advisor" ? "orientador" : "artista",
                 status: "pending",
                 moderator_votes: 0
               });
