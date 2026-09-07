@@ -12,6 +12,12 @@
   let currentSection = "profile";
 
   async function load() {
+    const supabase = window.supabaseClient;
+    if (!supabase) {
+      console.warn("[perfil] supabase client ainda não disponível");
+      return;
+    }
+
     const { user } = await window.getCurrentUser();
     if (!user) {
       window.location.href = "welcome.html";
@@ -19,27 +25,33 @@
     }
     currentUser = user;
 
-    const supabase = window.supabaseClient;
-    if (!supabase) {
-      main.innerHTML = "<p>Supabase não configurado.</p>";
-      return;
+    let artistData = null;
+    try {
+      const { data } = await window.supabaseClient
+        .from("artists")
+        .select("*")
+        .eq("user_id", user.id)
+        .single();
+      artistData = data;
+    } catch (err) {
+      console.warn("[perfil] load artist warning:", err);
     }
-
-    const { data: artistData } = await supabase
-      .from("artists")
-      .select("*")
-      .eq("user_id", user.id)
-      .single();
 
     artist = artistData;
 
-    const { data: worksData } = await supabase
-      .from("works")
-      .select("*")
-      .eq("artist_id", artist ? artist.id : "none")
-      .order("created_at", { ascending: false });
+    let worksData = [];
+    try {
+      const { data } = await window.supabaseClient
+        .from("works")
+        .select("*")
+        .eq("artist_id", artist ? artist.id : "none")
+        .order("created_at", { ascending: false });
+      worksData = data || [];
+    } catch (err) {
+      console.warn("[perfil] load works warning:", err);
+    }
 
-    works = worksData || [];
+    works = worksData;
 
     if (!artist) {
       artist = {
@@ -155,25 +167,26 @@
         updated_at: new Date().toISOString()
       };
 
-      if (artist && artist.id) {
-        const { error } = await supabase.from("artists").update(data).eq("id", artist.id);
-        if (error) {
-          alert("Erro ao salvar: " + error.message);
-        } else {
+      try {
+        if (artist && artist.id) {
+          const { error } = await window.supabaseClient.from("artists").update(data).eq("id", artist.id);
+          if (error) throw error;
           artist = { ...artist, ...data };
           alert("Perfil atualizado!");
-        }
-      } else {
-        const { data: inserted, error } = await supabase.from("artists").insert({
-          ...data,
-          user_id: currentUser.id
-        }).select().single();
-        if (error) {
-          alert("Erro ao criar perfil: " + error.message);
         } else {
+          const payload = {
+            ...data,
+            user_id: currentUser.id,
+            id: "artist-" + Date.now() + "-" + Math.random().toString(36).slice(2, 8)
+          };
+          const { data: inserted, error } = await window.supabaseClient.from("artists").insert(payload).select().single();
+          if (error) throw error;
           artist = inserted;
           alert("Perfil criado!");
         }
+      } catch (err) {
+        alert("Erro: " + err.message);
+        console.error("[perfil] save error:", err);
       }
     });
   }
@@ -188,9 +201,7 @@
       <div class="perfil-section">
         <h2>Publicar nova obra</h2>
         <p class="muted">
-          ${canPublishDirectly
-            ? "Publicações aprovadas automaticamente."
-            : "Obras ficam pendentes até aprovação do seu orientador."}
+          Obras podem ser salvas como rascunho ou publicadas diretamente.
         </p>
         <form id="work-form" class="perfil-form">
           <label><span>Título</span><input type="text" id="work-title" required></label>
@@ -243,6 +254,7 @@
       const visibility = document.getElementById("work-visibility").value;
       const status = document.getElementById("work-status").value;
       const youtube_url = document.getElementById("work-youtube").value.trim() || null;
+      const imageUrl = document.getElementById("work-image").value.trim() || null;
       const file = document.getElementById("work-file").files[0];
 
       let file_url = null;
@@ -255,27 +267,29 @@
         else if (ext === "pdf") file_type = "pdf";
 
         const path = `${artist.id}/${Date.now()}_${file.name}`;
-        const { error: upErr } = await supabase.storage.from("works").upload(path, file);
+        const { error: upErr } = await window.supabaseClient.storage.from("works").upload(path, file);
         if (!upErr) {
-          const { data: { publicUrl } } = supabase.storage.from("works").getPublicUrl(path);
+          const { data: { publicUrl } } = window.supabaseClient.storage.from("works").getPublicUrl(path);
           file_url = publicUrl;
         }
       }
 
-      const { error } = await supabase.from("works").insert({
-        artist_id: artist.id,
-        advisor_id: artist.advisor_id || null,
-        title, category, year, description,
-        visibility, status: finalStatus, youtube_url,
-        image: imageUrl || file_url,
-        file_url, file_type
-      });
+      try {
+        const { error } = await window.supabaseClient.from("works").insert({
+          artist_id: artist.id,
+          advisor_id: artist.advisor_id || null,
+          title, category, year, description,
+          visibility, status, youtube_url,
+          image: imageUrl || file_url,
+          file_url, file_type
+        });
 
-      if (error) {
-        alert("Erro: " + error.message);
-      } else {
-        alert(canPublishDirectly ? "Obra publicada!" : "Obra enviada para aprovação do orientador.");
+        if (error) throw error;
+        alert("Obra salva!");
         showSection("works");
+      } catch (err) {
+        alert("Erro: " + err.message);
+        console.error("[perfil] work save error:", err);
       }
     });
   }
@@ -324,7 +338,7 @@
       const newPassword = document.getElementById("sec-new-password").value;
 
       try {
-        const { error } = await supabase.auth.updateUser({ password: newPassword });
+        const { error } = await window.supabaseClient.auth.updateUser({ password: newPassword });
         if (error) {
           alert("Erro: " + error.message);
         } else {
@@ -341,7 +355,7 @@
       const newEmail = document.getElementById("sec-new-email").value.trim();
 
       try {
-        const { error } = await supabase.auth.updateUser({ email: newEmail });
+        const { error } = await window.supabaseClient.auth.updateUser({ email: newEmail });
         if (error) {
           alert("Erro: " + error.message);
         } else {
@@ -360,7 +374,7 @@
       return;
     }
 
-    const { data: advisors } = await supabase
+    const { data: advisors } = await window.supabaseClient
       .from("artists")
       .select("id, name, area, title")
       .eq("type", "advisor")
@@ -418,7 +432,7 @@
         }
 
         const requestId = "req-" + Date.now() + "-" + Math.random().toString(36).slice(2, 8);
-        const { error } = await supabase
+        const { error } = await window.supabaseClient
           .from("advisor_requests")
           .insert({
             id: requestId,
@@ -448,5 +462,18 @@
       .replace(/'/g, "&#039;");
   }
 
-  load();
+  (async function boot() {
+    try {
+      while (typeof window.getCurrentUser !== "function") {
+        await new Promise(r => setTimeout(r, 50));
+      }
+      await window.initAuthGuard();
+      await load();
+    } catch (err) {
+      console.error("[perfil] boot error:", err);
+      if (main) {
+        main.innerHTML = '<div class="perfil-section"><p class="auth-error">Erro ao carregar perfil: ' + escapeHtml(err.message) + '</p></div>';
+      }
+    }
+  })();
 })();

@@ -20,32 +20,33 @@ if (fs.existsSync(envPath)) {
     const eqIdx = trimmed.indexOf("=");
     if (eqIdx === -1) return;
     const key = trimmed.slice(0, eqIdx).trim();
-    const value = trimmed.slice(eqIdx + 1).trim();
+    let value = trimmed.slice(eqIdx + 1).trim();
+    // Remove aspas simples ou duplas em volta do valor (comum em arquivos .env)
+    if ((value.startsWith('"') && value.endsWith('"')) || (value.startsWith("'") && value.endsWith("'"))) {
+      value = value.slice(1, -1);
+    }
     envVars[key] = value;
   });
 }
 
-const supabaseUrl = envVars.SUPABASE_URL || "";
-const supabaseKey = envVars.SUPABASE_ANON_KEY || "";
+// Preferência: arquivo .env local (fonte da verdade em dev) > process.env (usado no build do Vercel, onde não há .env)
+const supabaseUrl = envVars.SUPABASE_URL || process.env.SUPABASE_URL || "";
+const supabaseKey = envVars.SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY || "";
 
 const configContent = `// ============================================
-// ENTRE — Configuração
+// ENTRE — Configuração Global
 // Gerado automaticamente por build.js — NÃO EDITE MANUALMENTE
 // ============================================
 
-const CONFIG = {
+window.ENTRE_CONFIG = {
   SUPABASE_URL: ${JSON.stringify(supabaseUrl)},
   SUPABASE_ANON_KEY: ${JSON.stringify(supabaseKey)},
 };
 
-export function getConfig() {
-  return CONFIG;
-}
-
-export function updateConfig(url, key) {
-  CONFIG.SUPABASE_URL = url;
-  CONFIG.SUPABASE_ANON_KEY = key;
-}
+window.updateConfig = function(url, key) {
+  window.ENTRE_CONFIG.SUPABASE_URL = url;
+  window.ENTRE_CONFIG.SUPABASE_ANON_KEY = key;
+};
 `;
 
 fs.writeFileSync(configPath, configContent, "utf-8");
