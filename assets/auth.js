@@ -165,7 +165,18 @@ function bindForms() {
       try {
         const { data, error } = await window.signUp(email, password, { name });
         if (error) {
-          showError(registerError, "Não foi possível criar a conta. Tente novamente.");
+          const msg = (error.message || "").toLowerCase();
+          if (
+            msg.includes("already registered") ||
+            msg.includes("already exists") ||
+            msg.includes("email already") ||
+            msg.includes("already in use") ||
+            msg.includes("conta já existe")
+          ) {
+            showError(registerError, "Esta conta já existe. Faça login ou use o botão de recuperação de senha.");
+          } else {
+            showError(registerError, "Não foi possível criar a conta. Tente novamente.");
+          }
         } else if (data && data.user) {
           const supabase = window.supabaseClient;
           if (supabase) {
