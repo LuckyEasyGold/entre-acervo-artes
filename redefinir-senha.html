@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>ENTRE — Redefinir senha</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Manrope:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,500;0,600;1,500;1,600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/style.css">
+  <script src="assets/config.js"></script>
+  <script src="assets/supabase.js"></script>
+</head>
+<body class="auth-body">
+  <div class="grain"></div>
+
+  <main class="auth-main">
+    <div class="auth-container" style="max-width: 520px;">
+      <section class="auth-card">
+        <div class="auth-header">
+          <h1>Nova senha</h1>
+          <p>Crie uma nova senha para acessar sua conta.</p>
+        </div>
+
+        <form id="reset-password-form" class="auth-form">
+          <div class="auth-field">
+            <label for="reset-password">Nova senha</label>
+            <div class="password-wrap">
+              <input type="password" id="reset-password" required minlength="6" placeholder="••••••••" autocomplete="new-password">
+              <button type="button" class="password-toggle" aria-label="Mostrar senha" data-target="reset-password">👁</button>
+            </div>
+          </div>
+
+          <div class="auth-field">
+            <label for="reset-password-confirm">Confirmar senha</label>
+            <div class="password-wrap">
+              <input type="password" id="reset-password-confirm" required minlength="6" placeholder="••••••••" autocomplete="new-password">
+              <button type="button" class="password-toggle" aria-label="Mostrar senha" data-target="reset-password-confirm">👁</button>
+            </div>
+          </div>
+
+          <button type="submit" class="btn btn-dark btn-full">Salvar nova senha</button>
+          <p id="reset-error" class="auth-error"></p>
+          <p id="reset-success" class="auth-success"></p>
+        </form>
+      </section>
+    </div>
+  </main>
+
+  <script>
+    (async function () {
+      const form = document.getElementById("reset-password-form");
+      const errorEl = document.getElementById("reset-error");
+      const successEl = document.getElementById("reset-success");
+      const passwordInput = document.getElementById("reset-password");
+      const confirmInput = document.getElementById("reset-password-confirm");
+
+      function showError(message) {
+        if (errorEl) errorEl.textContent = message;
+        if (successEl) successEl.textContent = "";
+      }
+
+      function showSuccess(message) {
+        if (successEl) successEl.textContent = message;
+        if (errorEl) errorEl.textContent = "";
+      }
+
+      function setupPasswordToggles() {
+        document.querySelectorAll(".password-toggle").forEach(function (btn) {
+          btn.addEventListener("click", function () {
+            const targetId = btn.dataset.target;
+            const input = document.getElementById(targetId);
+            if (!input) return;
+            const isPassword = input.type === "password";
+            input.type = isPassword ? "text" : "password";
+            btn.textContent = isPassword ? "🙈" : "👁";
+            btn.setAttribute("aria-label", isPassword ? "Ocultar senha" : "Mostrar senha");
+          });
+        });
+      }
+
+      setupPasswordToggles();
+
+      const waitForSupabase = async function () {
+        const maxTries = 50;
+        for (let i = 0; i < maxTries; i += 1) {
+          if (window.supabaseClient && typeof window.supabaseClient.auth === "object") {
+            return window.supabaseClient;
+          }
+          await new Promise(function (resolve) { setTimeout(resolve, 100); });
+        }
+        return null;
+      };
+
+      const supabase = await waitForSupabase();
+      if (!supabase) {
+        showError("Não foi possível conectar ao servidor de autenticação.");
+        form && form.querySelector('button[type="submit"]').setAttribute("disabled", "disabled");
+        return;
+      }
+
+      if (typeof supabase.auth.getSessionFromUrl === "function") {
+        try {
+          const { data, error } = await supabase.auth.getSessionFromUrl({ storeSession: true });
+          if (error) {
+            console.warn("[reset] getSessionFromUrl error:", error);
+          }
+          if (!data || !data.session) {
+            showError("Link de recuperação inválido ou expirado. Solicite um novo e-mail de recuperação.");
+            if (form) {
+              form.style.display = "none";
+            }
+            return;
+          }
+        } catch (err) {
+          console.warn("[reset] getSessionFromUrl exception:", err);
+        }
+      }
+
+      if (form) {
+        form.addEventListener("submit", async function (event) {
+          event.preventDefault();
+          if (!passwordInput || !confirmInput) return;
+
+          const password = passwordInput.value;
+          const confirm = confirmInput.value;
+
+          if (password.length < 6) {
+            showError("A senha deve ter pelo menos 6 caracteres.");
+            return;
+          }
+
+          if (password !== confirm) {
+            showError("As senhas não conferem.");
+            return;
+          }
+
+          try {
+            const { error } = await window.updatePassword(password);
+            if (error) {
+              showError(error.message || "Não foi possível salvar a nova senha.");
+              return;
+            }
+
+            showSuccess("Senha atualizada com sucesso! Redirecionando para o login...");
+            form.reset();
+            setTimeout(function () {
+              window.location.href = "login.html";
+            }, 1800);
+          } catch (err) {
+            console.error("[reset] update password error:", err);
+            showError("Erro ao salvar a nova senha. Tente novamente.");
+          }
+        });
+      }
+    })();
+  </script>
+</body>
+</html>

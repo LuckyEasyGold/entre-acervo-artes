@@ -4,13 +4,19 @@
 
 const loginForm = document.getElementById("login-form");
 const registerForm = document.getElementById("register-form");
+const forgotPasswordForm = document.getElementById("forgot-password-form");
 const loginError = document.getElementById("login-error");
 const registerError = document.getElementById("register-error");
+const forgotError = document.getElementById("forgot-error");
+const forgotSuccess = document.getElementById("forgot-success");
 
 function showError(el, msg) {
   if (el) el.textContent = msg;
 }
 function clearError(el) {
+  if (el) el.textContent = "";
+}
+function clearSuccess(el) {
   if (el) el.textContent = "";
 }
 
@@ -86,6 +92,55 @@ function bindForms() {
       } catch (err) {
         console.error("login submit error:", err);
         showError(loginError, "Erro de conexão. Tente novamente.");
+      }
+    });
+  }
+
+  const forgotLink = document.getElementById("forgot-password-link");
+  const forgotBack = document.getElementById("forgot-back-to-login");
+  const forgotEmail = document.getElementById("forgot-email");
+
+  if (forgotLink) {
+    forgotLink.addEventListener("click", function() {
+      if (loginForm) loginForm.style.display = "none";
+      if (forgotPasswordForm) forgotPasswordForm.style.display = "flex";
+      clearError(loginError);
+      clearError(forgotError);
+      clearSuccess(forgotSuccess);
+      if (forgotEmail) forgotEmail.focus();
+    });
+  }
+
+  if (forgotBack) {
+    forgotBack.addEventListener("click", function() {
+      if (forgotPasswordForm) forgotPasswordForm.style.display = "none";
+      if (loginForm) loginForm.style.display = "flex";
+      clearError(forgotError);
+      clearSuccess(forgotSuccess);
+      const emailInput = document.getElementById("login-email");
+      if (emailInput) emailInput.focus();
+    });
+  }
+
+  if (forgotPasswordForm) {
+    forgotPasswordForm.addEventListener("submit", async function(e) {
+      e.preventDefault();
+      clearError(forgotError);
+      clearSuccess(forgotSuccess);
+      const email = document.getElementById("forgot-email").value.trim();
+      try {
+        const { error } = await window.forgotPassword(email);
+        if (error) {
+          showError(forgotError, error.message || "Não foi possível enviar o link.");
+          return;
+        }
+        if (forgotSuccess) {
+          forgotSuccess.textContent = "Se essa conta existir, enviamos um link para redefinir a senha.";
+        }
+        forgotPasswordForm.reset();
+      } catch (err) {
+        console.error("forgot password submit error:", err);
+        showError(forgotError, "Erro de conexão. Tente novamente.");
       }
     });
   }
