@@ -68,7 +68,25 @@ function ensureSupabaseSDK() {
     window.resetPassword = async function(email) {
       if (!window.supabaseClient) return { error: { message: "Supabase não configurado" } };
       const { data, error } = await window.supabaseClient.auth.resetPasswordForEmail(email, {
-        redirectTo: window.location.origin + "/welcome.html"
+        redirectTo: window.location.origin + "/redefinir-senha.html"
+      });
+      return { data, error };
+    };
+
+    window.forgotPassword = async function(email) {
+      if (!email || !email.trim()) {
+        return { data: null, error: { message: "Informe um e-mail válido." } };
+      }
+      return window.resetPassword(email.trim());
+    };
+
+    window.updatePassword = async function(newPassword) {
+      if (!window.supabaseClient) return { error: { message: "Supabase não configurado" } };
+      if (!newPassword || newPassword.length < 6) {
+        return { error: { message: "A senha deve ter pelo menos 6 caracteres." } };
+      }
+      const { data, error } = await window.supabaseClient.auth.updateUser({
+        password: newPassword
       });
       return { data, error };
     };
@@ -79,5 +97,8 @@ function ensureSupabaseSDK() {
     window.signUp = async () => ({ data: null, error: { message: "Supabase não inicializado" } });
     window.signIn = async () => ({ data: null, error: { message: "Supabase não inicializado" } });
     window.getCurrentUser = async () => ({ user: null, error: { message: "Supabase não inicializado" } });
+    window.resetPassword = async () => ({ data: null, error: { message: "Supabase não inicializado" } });
+    window.forgotPassword = async () => ({ data: null, error: { message: "Supabase não inicializado" } });
+    window.updatePassword = async () => ({ data: null, error: { message: "Supabase não inicializado" } });
   }
 })();
