@@ -24,16 +24,27 @@
       return;
     }
 
-    const { data: me } = await supabase
-      .from("artists")
-      .select("id, role, type")
-      .eq("user_id", user.id)
-      .single();
+    let me = null;
+    try {
+      const { data } = await supabase
+        .from("artists")
+        .select("id, role, type, status")
+        .eq("user_id", user.id)
+        .single();
+      me = data;
+    } catch (err) {
+      console.warn("[disciplinas] perfil do orientador não encontrado:", err);
+    }
 
-    const isAdvisorProfile = !!me && (me.type === "advisor" || me.role === "orientador");
+    const isAdvisorProfile = !!me && (
+      me.type === "advisor" ||
+      me.role === "orientador" ||
+      me.role === "adm" ||
+      me.role === "moderador"
+    );
 
     if (!me || !isAdvisorProfile) {
-      main.innerHTML = "<p>Acesso restrito a orientadores.</p>";
+      main.innerHTML = "<p>Seu perfil de orientador não foi encontrado ou não está validado. Complete seu perfil em Meu Perfil e verifique se o tipo está como orientador.</p>";
       return;
     }
 
@@ -127,7 +138,11 @@
         });
 
         if (error) {
-          alert("Erro: " + error.message);
+          if ((error.message || "").toLowerCase().includes("row-level security") || (error.message || "").toLowerCase().includes("forbidden")) {
+            alert("Não foi possível criar a disciplina. O perfil do orientador não está validado no banco do Supabase. Verifique o registro em public.artists e a policy de RLS.");
+          } else {
+            alert("Erro: " + error.message);
+          }
         } else {
           alert("Disciplina criada!");
           window.location.reload();
