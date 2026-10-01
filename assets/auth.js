@@ -135,7 +135,7 @@ function bindForms() {
           return;
         }
         if (forgotSuccess) {
-          forgotSuccess.textContent = "Se essa conta existir, enviamos um link para redefinir a senha.";
+          forgotSuccess.textContent = "Se essa conta existir, enviamos um link para redefinir a senha. Esse link expira em alguns minutos.";
         }
         forgotPasswordForm.reset();
       } catch (err) {
