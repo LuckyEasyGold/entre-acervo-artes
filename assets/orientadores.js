@@ -19,7 +19,9 @@
     }
   }
 
-  const advisors = allArtists.filter(function(a) { return a.type === "advisor"; });
+  const advisors = allArtists.filter(function(a) {
+    return !!a && (a.type === "advisor" || a.role === "orientador");
+  });
   const grid = document.getElementById("orientadores-grid");
   const count = document.getElementById("advisors-count");
   if (count) count.textContent = advisors.length;

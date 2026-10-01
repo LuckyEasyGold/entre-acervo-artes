@@ -74,7 +74,7 @@
   }
 
   function renderSidebar() {
-    const isAdvisor = artist && artist.type === "advisor";
+    const isAdvisor = artist && (artist.type === "advisor" || artist.role === "orientador");
     const html = `
       <div class="perfil-layout">
         <aside class="perfil-sidebar">
@@ -128,7 +128,7 @@
 
   function renderProfile(container) {
     const a = artist || {};
-    const isAdvisor = a.type === "advisor";
+    const isAdvisor = a.type === "advisor" || a.role === "orientador";
     const subtitle = isAdvisor
       ? [a.title, a.area].filter(Boolean).join(" · ")
       : (a.course || "");
@@ -301,7 +301,10 @@
       }
 
       try {
+        const workId = "work-" + Date.now() + "-" + Math.random().toString(36).slice(2, 8);
+
         const { error } = await window.supabaseClient.from("works").insert({
+          id: workId,
           artist_id: artist.id,
           advisor_id: artist.advisor_id || null,
           title, category, year, description,

@@ -31,6 +31,10 @@
     });
   }
 
+  function isAdvisorArtist(artist) {
+    return !!artist && (artist.type === "advisor" || artist.role === "orientador");
+  }
+
   function buildSocials(social) {
     if (!social) return "";
     const items = [];
@@ -51,7 +55,7 @@
   var currentIsOwner = false;
 
   function renderAbout(artist, isOwner) {
-    const isAdvisor = artist.type === "advisor";
+    const isAdvisor = isAdvisorArtist(artist);
     const subtitle = isAdvisor
       ? [artist.title, artist.area].filter(Boolean).join(" · ")
       : (artist.course || "Aluno do curso de Artes Visuais");
@@ -77,7 +81,7 @@
   }
 
   function renderCurriculo(artist) {
-    if (artist.type !== "advisor") return "";
+    if (!isAdvisorArtist(artist)) return "";
     const subjects = (artist.subjects || []).map(function(s) { return '<li>' + s + '</li>'; }).join("");
     return '<div class="tab-pane" data-pane="curriculo">' +
       '<p class="eyebrow">CURRÍCULO</p>' +
@@ -90,7 +94,7 @@
   }
 
   function renderProducoes(artist) {
-    if (artist.type !== "advisor") return "";
+    if (!isAdvisorArtist(artist)) return "";
     const prods = artist.academicProductions || [];
     if (!prods.length) {
       return '<div class="tab-pane" data-pane="producoes"><p class="eyebrow">PRODUÇÕES ACADÊMICAS</p><p class="muted">Nenhuma produção cadastrada.</p></div>';
@@ -104,7 +108,7 @@
   }
 
   function renderAlunos(artist) {
-    if (artist.type !== "advisor") return "";
+    if (!isAdvisorArtist(artist)) return "";
     const studentIds = artist.students || [];
     const students = studentIds.map(function(id) { return findArtist(id); }).filter(Boolean);
     if (!students.length) {
@@ -153,7 +157,7 @@
   function renderArtist(artist, isOwner) {
     currentArtist = artist;
     currentIsOwner = isOwner || false;
-    const isAdvisor = artist.type === "advisor";
+    const isAdvisor = isAdvisorArtist(artist);
     const tabs = [tabButton("Sobre", "sobre", true)];
     if (isAdvisor) tabs.push(tabButton("Currículo", "curriculo"));
     if (isAdvisor) tabs.push(tabButton("Produções", "producoes"));
