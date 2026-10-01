@@ -106,14 +106,7 @@
             console.warn("[reset] getSessionFromUrl error:", error);
           }
           if (!data || !data.session) {
-            showError("Link de recuperação inválido ou expirado. Solicite um novo e-mail de recuperação.");
-            if (form) {
-              form.style.display = "none";
-            }
-            return;
-          }
-        } catch (err) {
-          console.warn("[reset] getSessionFromUrl exception:", err);
+            showError("Link de recuperação expirado ou inválido. Solicite um novo link para redefinir sua senha.");
         }
       }
 
@@ -138,6 +131,11 @@
           try {
             const { error } = await window.updatePassword(password);
             if (error) {
+              const message = (error.message || "").toLowerCase();
+              if (message.includes("session") || message.includes("auth session missing") || message.includes("expired")) {
+                showError("O link de recuperação expirou. Solicite um novo link para redefinir sua senha.");
+                return;
+              }
               showError(error.message || "Não foi possível salvar a nova senha.");
               return;
             }
