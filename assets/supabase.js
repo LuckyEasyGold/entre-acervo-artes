@@ -50,6 +50,26 @@ function ensureSupabaseSDK() {
         password,
         options: { data: metadata }
       });
+
+      if (error) {
+        const normalizedMessage = (error.message || "").toLowerCase();
+        if (
+          normalizedMessage.includes("already registered") ||
+          normalizedMessage.includes("user already registered") ||
+          normalizedMessage.includes("email already") ||
+          normalizedMessage.includes("already exists") ||
+          normalizedMessage.includes("already in use")
+        ) {
+          return {
+            data,
+            error: {
+              ...error,
+              message: "Esta conta já existe. Faça login ou recupere a senha."
+            }
+          };
+        }
+      }
+
       return { data, error };
     };
 
