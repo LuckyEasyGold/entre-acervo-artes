@@ -37,8 +37,12 @@ function buildSocials(social) {
   return items.length ? `<div class="social-icons">${items.join("")}</div>` : "";
 }
 
+function isAdvisorArtist(artist) {
+  return !!artist && (artist.type === "advisor" || artist.role === "orientador");
+}
+
 function renderAbout(artist, isOwner) {
-  const isAdvisor = artist.type === "advisor";
+  const isAdvisor = isAdvisorArtist(artist);
   const subtitle = isAdvisor
     ? [artist.title, artist.area].filter(Boolean).join(" · ")
     : (artist.course || "Aluno do curso de Artes Visuais");
@@ -67,7 +71,7 @@ function renderAbout(artist, isOwner) {
 }
 
 function renderCurriculo(artist) {
-  if (artist.type !== "advisor") return "";
+  if (!isAdvisorArtist(artist)) return "";
   const subjects = (artist.subjects || []).map(s => `<li>${s}</li>`).join("");
   return `
     <div class="tab-pane" data-pane="curriculo">
@@ -87,7 +91,7 @@ function renderCurriculo(artist) {
 }
 
 function renderProducoes(artist) {
-  if (artist.type !== "advisor") return "";
+  if (!isAdvisorArtist(artist)) return "";
   const prods = artist.academicProductions || [];
   if (!prods.length) {
     return `
@@ -113,7 +117,7 @@ function renderProducoes(artist) {
 }
 
 function renderAlunos(artist) {
-  if (artist.type !== "advisor") return "";
+  if (!isAdvisorArtist(artist)) return "";
   const studentIds = artist.students || [];
   const students = studentIds.map(id => findArtist(id)).filter(Boolean);
   if (!students.length) {
@@ -172,7 +176,7 @@ function showArtistProfile(artist, index, ctx = {}) {
   currentArtist = artist;
   currentArtistIndex = index >= 0 ? index : allArtists.indexOf(artist);
 
-  const isAdvisor = artist.type === "advisor";
+  const isAdvisor = isAdvisorArtist(artist);
   const tabs = [
     tabButton("Sobre", "sobre", true)
   ];

@@ -66,7 +66,13 @@ CREATE POLICY "advisor_votes_select_own" ON public.advisor_votes FOR SELECT USIN
 );
 DROP POLICY IF EXISTS "advisor_votes_insert_own" ON public.advisor_votes;
 CREATE POLICY "advisor_votes_insert_own" ON public.advisor_votes FOR INSERT WITH CHECK (
-  EXISTS (SELECT 1 FROM public.artists WHERE id = advisor_id AND user_id = auth.uid() AND type = 'advisor')
+  EXISTS (
+    SELECT 1
+    FROM public.artists a
+    WHERE a.id = advisor_id
+      AND a.user_id = auth.uid()
+      AND (a.type = 'advisor' OR a.role = 'orientador')
+  )
 );
 
 -- ============================================
@@ -93,15 +99,33 @@ DROP POLICY IF EXISTS "disciplines_select_public" ON public.disciplines;
 CREATE POLICY "disciplines_select_public" ON public.disciplines FOR SELECT USING (true);
 DROP POLICY IF EXISTS "disciplines_insert_advisor" ON public.disciplines;
 CREATE POLICY "disciplines_insert_advisor" ON public.disciplines FOR INSERT WITH CHECK (
-  EXISTS (SELECT 1 FROM public.artists WHERE id = advisor_id AND user_id = auth.uid() AND type = 'advisor')
+  EXISTS (
+    SELECT 1
+    FROM public.artists a
+    WHERE a.id = advisor_id
+      AND a.user_id = auth.uid()
+      AND (a.type = 'advisor' OR a.role = 'orientador')
+  )
 );
 DROP POLICY IF EXISTS "disciplines_update_advisor" ON public.disciplines;
 CREATE POLICY "disciplines_update_advisor" ON public.disciplines FOR UPDATE USING (
-  EXISTS (SELECT 1 FROM public.artists WHERE id = advisor_id AND user_id = auth.uid() AND type = 'advisor')
+  EXISTS (
+    SELECT 1
+    FROM public.artists a
+    WHERE a.id = advisor_id
+      AND a.user_id = auth.uid()
+      AND (a.type = 'advisor' OR a.role = 'orientador')
+  )
 );
 DROP POLICY IF EXISTS "disciplines_delete_advisor" ON public.disciplines;
 CREATE POLICY "disciplines_delete_advisor" ON public.disciplines FOR DELETE USING (
-  EXISTS (SELECT 1 FROM public.artists WHERE id = advisor_id AND user_id = auth.uid() AND type = 'advisor')
+  EXISTS (
+    SELECT 1
+    FROM public.artists a
+    WHERE a.id = advisor_id
+      AND a.user_id = auth.uid()
+      AND (a.type = 'advisor' OR a.role = 'orientador')
+  )
 );
 
 -- ============================================
@@ -121,7 +145,7 @@ CREATE POLICY "enrollments_insert_student" ON public.enrollments FOR INSERT WITH
 DROP POLICY IF EXISTS "enrollments_update_advisor" ON public.enrollments;
 CREATE POLICY "enrollments_update_advisor" ON public.enrollments FOR UPDATE USING (
   EXISTS (SELECT 1 FROM public.disciplines WHERE id = discipline_id AND advisor_id IN (
-    SELECT id FROM public.artists WHERE user_id = auth.uid() AND type = 'advisor'
+    SELECT id FROM public.artists WHERE user_id = auth.uid() AND (type = 'advisor' OR role = 'orientador')
   ))
 );
 

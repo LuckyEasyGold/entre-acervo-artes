@@ -30,7 +30,9 @@
       .eq("user_id", user.id)
       .single();
 
-    if (!me || me.type !== "advisor") {
+    const isAdvisorProfile = !!me && (me.type === "advisor" || me.role === "orientador");
+
+    if (!me || !isAdvisorProfile) {
       main.innerHTML = "<p>Acesso restrito a orientadores.</p>";
       return;
     }
