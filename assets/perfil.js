@@ -140,6 +140,7 @@
             <label><span>Nome</span><input type="text" id="p-name" value="${escapeHtml(a.name || '')}" required></label>
             <label><span>Bio</span><textarea id="p-bio" rows="3">${escapeHtml(a.bio || '')}</textarea></label>
             <label><span>Foto de perfil (URL)</span><input type="url" id="p-image" value="${escapeHtml(a.image || '')}" placeholder="https://..."></label>
+            <label><span>Ou carregar do computador</span><input type="file" id="p-image-file" accept="image/*"></label>
             <label><span>Curso</span><input type="text" id="p-course" value="${escapeHtml(a.course || '')}" placeholder="Artes Visuais"></label>
             <label><span>Título / Grau</span><input type="text" id="p-title" value="${escapeHtml(a.title || '')}" placeholder="Ex.: Mestre, Doutor..."></label>
             <label><span>Área de atuação</span><input type="text" id="p-area" value="${escapeHtml(a.area || '')}" placeholder="Pintura contemporânea"></label>
@@ -152,41 +153,62 @@
 
       document.getElementById("profile-form").addEventListener("submit", async e => {
         e.preventDefault();
-        const data = {
-          name: document.getElementById("p-name").value.trim(),
-          bio: document.getElementById("p-bio").value.trim(),
-          image: document.getElementById("p-image").value.trim(),
-          course: document.getElementById("p-course").value.trim(),
-          title: document.getElementById("p-title").value.trim(),
-          area: document.getElementById("p-area").value.trim(),
-          curriculum: document.getElementById("p-curriculum").value.trim(),
-          subjects: document.getElementById("p-subjects").value.split(",").map(s => s.trim()).filter(Boolean),
-          updated_at: new Date().toISOString()
-        };
+        const fileInput = document.getElementById("p-image-file");
+        const file = fileInput && fileInput.files && fileInput.files[0] ? fileInput.files[0] : null;
 
-      try {
-        if (artist && artist.id) {
-          const { error } = await window.supabaseClient.from("artists").update(data).eq("id", artist.id);
-          if (error) throw error;
-          artist = { ...artist, ...data };
-          alert("Perfil atualizado!");
-        } else {
-          const payload = {
-            ...data,
-            user_id: currentUser.id,
-            id: "artist-" + Date.now() + "-" + Math.random().toString(36).slice(2, 8)
+        let finalImage = document.getElementById("p-image").value.trim();
+
+        try {
+          if (file) {
+            const fileExt = (file.name.split(".").pop() || "jpg").toLowerCase();
+            const path = `${currentUser.id}/avatars/${Date.now()}_${Math.random().toString(36).slice(2, 8)}.${fileExt}`;
+            const { error: uploadError } = await window.supabaseClient.storage.from("avatars").upload(path, file, {
+              cacheControl: "3600",
+              upsert: true
+            });
+
+            if (uploadError) {
+              throw new Error("Não foi possível enviar a foto de perfil. Crie o bucket 'avatars' no Supabase e verifique as políticas de storage. " + (uploadError.message || ""));
+            }
+
+            const { data: publicData } = window.supabaseClient.storage.from("avatars").getPublicUrl(path);
+            finalImage = publicData?.publicUrl || finalImage;
+          }
+
+          const data = {
+            name: document.getElementById("p-name").value.trim(),
+            bio: document.getElementById("p-bio").value.trim(),
+            image: finalImage,
+            course: document.getElementById("p-course").value.trim(),
+            title: document.getElementById("p-title").value.trim(),
+            area: document.getElementById("p-area").value.trim(),
+            curriculum: document.getElementById("p-curriculum").value.trim(),
+            subjects: document.getElementById("p-subjects").value.split(",").map(s => s.trim()).filter(Boolean),
+            updated_at: new Date().toISOString()
           };
-          const { data: inserted, error } = await window.supabaseClient.from("artists").insert(payload).select().single();
-          if (error) throw error;
-          artist = inserted;
-          alert("Perfil criado!");
+
+          if (artist && artist.id) {
+            const { error } = await window.supabaseClient.from("artists").update(data).eq("id", artist.id);
+            if (error) throw error;
+            artist = { ...artist, ...data };
+            alert("Perfil atualizado!");
+          } else {
+            const payload = {
+              ...data,
+              user_id: currentUser.id,
+              id: "artist-" + Date.now() + "-" + Math.random().toString(36).slice(2, 8)
+            };
+            const { data: inserted, error } = await window.supabaseClient.from("artists").insert(payload).select().single();
+            if (error) throw error;
+            artist = inserted;
+            alert("Perfil criado!");
+          }
+        } catch (err) {
+          alert("Erro: " + err.message);
+          console.error("[perfil] save error:", err);
         }
-      } catch (err) {
-        alert("Erro: " + err.message);
-        console.error("[perfil] save error:", err);
-      }
-    });
-  }
+      });
+    }
 
   function renderPublish(container) {
     if (!artist || !artist.id) {
@@ -222,7 +244,7 @@
           </label>
           <label><span>Ano</span><input type="number" id="work-year" value="${new Date().getFullYear()}"></label>
           <label><span>Descrição</span><textarea id="work-description" rows="3"></textarea></label>
-          <label><span>Link da imagem (Pinterest público)</span><input type="url" id="work-image" placeholder="https://pinterest.com/pin/..." required></label>
+          <label><span>Link da imagem (Pinterest público)</span><input type="url" id="work-image" placeholder="https://pinterest.com/pin/..."></label>
           <label><span>Link do YouTube (vídeo público)</span><input type="url" id="work-youtube" placeholder="https://youtube.com/..."></label>
           <label><span>Arquivo (imagem, vídeo ou PDF)</span><input type="file" id="work-file" accept="image/*,video/*,.pdf"></label>
           <label><span>Visibilidade</span>
@@ -254,6 +276,11 @@
       const imageUrl = document.getElementById("work-image").value.trim() || null;
       const file = document.getElementById("work-file").files[0];
 
+      if (!imageUrl && !file && !youtube_url) {
+        alert("Selecione uma imagem, um arquivo ou um link de vídeo para publicar a obra.");
+        return;
+      }
+
       let file_url = null;
       let file_type = null;
 
@@ -265,10 +292,12 @@
 
         const path = `${artist.id}/${Date.now()}_${file.name}`;
         const { error: upErr } = await window.supabaseClient.storage.from("works").upload(path, file);
-        if (!upErr) {
-          const { data: { publicUrl } } = window.supabaseClient.storage.from("works").getPublicUrl(path);
-          file_url = publicUrl;
+        if (upErr) {
+          throw new Error("Não foi possível enviar o arquivo para o armazenamento. " + (upErr.message || ""));
         }
+
+        const { data: { publicUrl } } = window.supabaseClient.storage.from("works").getPublicUrl(path);
+        file_url = publicUrl;
       }
 
       try {

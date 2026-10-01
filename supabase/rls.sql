@@ -126,6 +126,31 @@ CREATE POLICY "enrollments_update_advisor" ON public.enrollments FOR UPDATE USIN
 );
 
 -- ============================================
+-- Storage: bucket "avatars" (cria se não existir)
+-- ============================================
+INSERT INTO storage.buckets (id, name, public)
+VALUES ('avatars', 'avatars', true)
+ON CONFLICT (id) DO NOTHING;
+
+-- Leitura pública das fotos de perfil
+DROP POLICY IF EXISTS "avatars_public_select" ON storage.objects;
+CREATE POLICY "avatars_public_select" ON storage.objects FOR SELECT USING (bucket_id = 'avatars');
+
+-- Upload de qualquer usuário autenticado
+DROP POLICY IF EXISTS "avatars_auth_insert" ON storage.objects;
+CREATE POLICY "avatars_auth_insert" ON storage.objects FOR INSERT WITH CHECK (
+  bucket_id = 'avatars' AND auth.role() = 'authenticated'
+);
+DROP POLICY IF EXISTS "avatars_auth_update" ON storage.objects;
+CREATE POLICY "avatars_auth_update" ON storage.objects FOR UPDATE USING (
+  bucket_id = 'avatars' AND auth.role() = 'authenticated'
+);
+DROP POLICY IF EXISTS "avatars_auth_delete" ON storage.objects;
+CREATE POLICY "avatars_auth_delete" ON storage.objects FOR DELETE USING (
+  bucket_id = 'avatars' AND auth.role() = 'authenticated'
+);
+
+-- ============================================
 -- Storage: bucket "works" (cria se não existir)
 -- ============================================
 INSERT INTO storage.buckets (id, name, public)
