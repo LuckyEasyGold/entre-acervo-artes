@@ -139,9 +139,11 @@
 
         if (error) {
           if ((error.message || "").toLowerCase().includes("row-level security") || (error.message || "").toLowerCase().includes("forbidden")) {
-            alert("Não foi possível criar a disciplina. O perfil do orientador não está validado no banco do Supabase. Verifique o registro em public.artists e a policy de RLS.");
+            alert(
+              "Não foi possível criar a disciplina porque seu perfil de orientador não está validado no sistema. Isso acontece quando o usuário logado não tem um registro correspondente em public.artists, ou quando o perfil existe mas não bate com o identificador do orientador. Em outras palavras: o sistema reconheceu que você entrou, mas não reconheceu que você é um orientador autorizado para criar disciplinas."
+            );
           } else {
-            alert("Erro: " + error.message);
+            alert("Não foi possível criar a disciplina. Tente novamente em alguns instantes.");
           }
         } else {
           alert("Disciplina criada!");
