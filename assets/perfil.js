@@ -141,6 +141,7 @@
             <label><span>Bio</span><textarea id="p-bio" rows="3">${escapeHtml(a.bio || '')}</textarea></label>
             <label><span>Foto de perfil (URL)</span><input type="url" id="p-image" value="${escapeHtml(a.image || '')}" placeholder="https://..."></label>
             <label><span>Ou carregar do computador</span><input type="file" id="p-image-file" accept="image/*"></label>
+            <div id="profile-upload-status" style="display:none; margin:8px 0; color:#6b4f00; font-size:0.9rem; font-weight:600;"></div>
             <label><span>Curso</span><input type="text" id="p-course" value="${escapeHtml(a.course || '')}" placeholder="Artes Visuais"></label>
             <label><span>Título / Grau</span><input type="text" id="p-title" value="${escapeHtml(a.title || '')}" placeholder="Ex.: Mestre, Doutor..."></label>
             <label><span>Área de atuação</span><input type="text" id="p-area" value="${escapeHtml(a.area || '')}" placeholder="Pintura contemporânea"></label>
@@ -155,11 +156,23 @@
         e.preventDefault();
         const fileInput = document.getElementById("p-image-file");
         const file = fileInput && fileInput.files && fileInput.files[0] ? fileInput.files[0] : null;
+        const uploadStatus = document.getElementById("profile-upload-status");
+        const submitButton = e.target.querySelector('button[type="submit"]');
+
+        const setUploadStatus = (message, isError = false) => {
+          if (!uploadStatus) return;
+          uploadStatus.style.display = "block";
+          uploadStatus.textContent = message;
+          uploadStatus.style.color = isError ? "#a42727" : "#6b4f00";
+        };
 
         let finalImage = document.getElementById("p-image").value.trim();
 
         try {
           if (file) {
+            setUploadStatus("Enviando foto de perfil...");
+            if (submitButton) submitButton.disabled = true;
+
             const fileExt = (file.name.split(".").pop() || "jpg").toLowerCase();
             const path = `${currentUser.id}/avatars/${Date.now()}_${Math.random().toString(36).slice(2, 8)}.${fileExt}`;
             const { error: uploadError } = await window.supabaseClient.storage.from("avatars").upload(path, file, {
@@ -168,11 +181,13 @@
             });
 
             if (uploadError) {
+              setUploadStatus("Não foi possível enviar a foto de perfil. Verifique o bucket de imagens e as permissões do Supabase.", true);
               throw new Error("Não foi possível enviar a foto de perfil. Crie o bucket 'avatars' no Supabase e verifique as políticas de storage. " + (uploadError.message || ""));
             }
 
             const { data: publicData } = window.supabaseClient.storage.from("avatars").getPublicUrl(path);
             finalImage = publicData?.publicUrl || finalImage;
+            setUploadStatus("Foto enviada. Salvando perfil...");
           }
 
           const data = {
@@ -191,6 +206,7 @@
             const { error } = await window.supabaseClient.from("artists").update(data).eq("id", artist.id);
             if (error) throw error;
             artist = { ...artist, ...data };
+            setUploadStatus("Perfil atualizado com sucesso!");
             alert("Perfil atualizado!");
           } else {
             const payload = {
@@ -201,11 +217,15 @@
             const { data: inserted, error } = await window.supabaseClient.from("artists").insert(payload).select().single();
             if (error) throw error;
             artist = inserted;
+            setUploadStatus("Perfil criado com sucesso!");
             alert("Perfil criado!");
           }
         } catch (err) {
+          setUploadStatus("Não foi possível salvar o perfil. Verifique os dados e tente novamente.", true);
           alert("Erro: " + err.message);
           console.error("[perfil] save error:", err);
+        } finally {
+          if (submitButton) submitButton.disabled = false;
         }
       });
     }
@@ -247,6 +267,7 @@
           <label><span>Link da imagem (Pinterest público)</span><input type="url" id="work-image" placeholder="https://pinterest.com/pin/..."></label>
           <label><span>Link do YouTube (vídeo público)</span><input type="url" id="work-youtube" placeholder="https://youtube.com/..."></label>
           <label><span>Arquivo (imagem, vídeo ou PDF)</span><input type="file" id="work-file" accept="image/*,video/*,.pdf"></label>
+          <div id="work-upload-status" style="display:none; margin:8px 0; color:#6b4f00; font-size:0.9rem; font-weight:600;"></div>
           <label><span>Visibilidade</span>
             <select id="work-visibility">
               <option value="public">Pública</option>
@@ -266,6 +287,15 @@
 
     document.getElementById("work-form").addEventListener("submit", async e => {
       e.preventDefault();
+      const uploadStatus = document.getElementById("work-upload-status");
+      const submitButton = e.target.querySelector('button[type="submit"]');
+      const setUploadStatus = (message, isError = false) => {
+        if (!uploadStatus) return;
+        uploadStatus.style.display = "block";
+        uploadStatus.textContent = message;
+        uploadStatus.style.color = isError ? "#a42727" : "#6b4f00";
+      };
+
       const title = document.getElementById("work-title").value.trim();
       const category = document.getElementById("work-category").value;
       const year = parseInt(document.getElementById("work-year").value);
@@ -284,23 +314,28 @@
       let file_url = null;
       let file_type = null;
 
-      if (file) {
-        const ext = file.name.split(".").pop().toLowerCase();
-        if (["jpg","jpeg","png","gif","webp"].includes(ext)) file_type = "image";
-        else if (["mp4","mov","webm"].includes(ext)) file_type = "video";
-        else if (ext === "pdf") file_type = "pdf";
+      try {
+        if (file) {
+          setUploadStatus("Enviando arquivo...");
+          if (submitButton) submitButton.disabled = true;
 
-        const path = `${artist.id}/${Date.now()}_${file.name}`;
-        const { error: upErr } = await window.supabaseClient.storage.from("works").upload(path, file);
-        if (upErr) {
-          throw new Error("Não foi possível enviar o arquivo para o armazenamento. " + (upErr.message || ""));
+          const ext = file.name.split(".").pop().toLowerCase();
+          if (["jpg","jpeg","png","gif","webp"].includes(ext)) file_type = "image";
+          else if (["mp4","mov","webm"].includes(ext)) file_type = "video";
+          else if (ext === "pdf") file_type = "pdf";
+
+          const path = `${artist.id}/${Date.now()}_${file.name}`;
+          const { error: upErr } = await window.supabaseClient.storage.from("works").upload(path, file);
+          if (upErr) {
+            setUploadStatus("Não foi possível enviar o arquivo. Verifique a pasta de arquivos e as permissões do Supabase.", true);
+            throw new Error("Não foi possível enviar o arquivo para o armazenamento. " + (upErr.message || ""));
+          }
+
+          const { data: { publicUrl } } = window.supabaseClient.storage.from("works").getPublicUrl(path);
+          file_url = publicUrl;
+          setUploadStatus("Arquivo enviado. Salvando obra...");
         }
 
-        const { data: { publicUrl } } = window.supabaseClient.storage.from("works").getPublicUrl(path);
-        file_url = publicUrl;
-      }
-
-      try {
         const workId = "work-" + Date.now() + "-" + Math.random().toString(36).slice(2, 8);
 
         const { error } = await window.supabaseClient.from("works").insert({
@@ -314,11 +349,15 @@
         });
 
         if (error) throw error;
+        setUploadStatus("Obra salva com sucesso!");
         alert("Obra salva!");
         showSection("works");
       } catch (err) {
+        setUploadStatus("Não foi possível salvar a obra. Verifique os dados e tente novamente.", true);
         alert("Erro: " + err.message);
         console.error("[perfil] work save error:", err);
+      } finally {
+        if (submitButton) submitButton.disabled = false;
       }
     });
   }
