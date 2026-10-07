@@ -23,7 +23,7 @@ CREATE TABLE IF NOT EXISTS public.artists (
   user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE UNIQUE,
   name TEXT NOT NULL,
   type TEXT NOT NULL CHECK (type IN ('student', 'advisor')),
-  role TEXT NOT NULL DEFAULT 'artista' CHECK (role IN ('adm', 'moderador', 'orientador', 'artista')),
+  role TEXT NOT NULL DEFAULT 'artista' CHECK (role IN ('adm', 'moderador', 'orientador', 'orientadora', 'artista')),
   status TEXT NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'approved', 'rejected')),
   approved_by TEXT REFERENCES public.artists(id) ON DELETE SET NULL,
   approved_at TIMESTAMPTZ,

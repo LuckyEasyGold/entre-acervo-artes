@@ -32,7 +32,8 @@
       .eq("user_id", user.id)
       .single();
 
-    if (!me || !["adm", "moderador", "orientador"].includes(me.role)) {
+    const normalizedRole = String(me && me.role ? me.role : "").trim().toLowerCase();
+    if (!me || !["adm", "moderador", "orientador", "orientadora"].includes(normalizedRole)) {
       if (main) main.innerHTML = "<p>Acesso restrito.</p>";
       return;
     }

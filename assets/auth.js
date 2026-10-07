@@ -83,7 +83,8 @@ function bindForms() {
             await window.signOut();
             return;
           }
-          if (["adm", "moderador", "orientador"].includes(role)) {
+          const normalizedRole = String(role || "").trim().toLowerCase();
+          if (["adm", "moderador", "orientador", "orientadora"].includes(normalizedRole)) {
             window.location.href = "home.html";
           } else {
             window.location.href = "home.html";

@@ -72,7 +72,7 @@ CREATE POLICY "disciplines_insert_advisor" ON public.disciplines FOR INSERT WITH
     FROM public.artists a
     WHERE a.id = disciplines.advisor_id
       AND a.user_id = auth.uid()
-      AND (a.type = 'advisor' OR a.role IN ('adm', 'moderador', 'orientador'))
+      AND (a.type = 'advisor' OR a.role IN ('adm', 'moderador', 'orientador', 'orientadora'))
   )
 );
 
@@ -83,7 +83,7 @@ CREATE POLICY "disciplines_update_advisor" ON public.disciplines FOR UPDATE USIN
     FROM public.artists a
     WHERE a.id = disciplines.advisor_id
       AND a.user_id = auth.uid()
-      AND (a.type = 'advisor' OR a.role IN ('adm', 'moderador', 'orientador'))
+      AND (a.type = 'advisor' OR a.role IN ('adm', 'moderador', 'orientador', 'orientadora'))
   )
 );
 
@@ -94,7 +94,7 @@ CREATE POLICY "disciplines_delete_advisor" ON public.disciplines FOR DELETE USIN
     FROM public.artists a
     WHERE a.id = disciplines.advisor_id
       AND a.user_id = auth.uid()
-      AND (a.type = 'advisor' OR a.role IN ('adm', 'moderador', 'orientador'))
+      AND (a.type = 'advisor' OR a.role IN ('adm', 'moderador', 'orientador', 'orientadora'))
   )
 );
 
@@ -117,6 +117,6 @@ CREATE POLICY "enrollments_insert_student" ON public.enrollments FOR INSERT WITH
 DROP POLICY IF EXISTS "enrollments_update_advisor" ON public.enrollments;
 CREATE POLICY "enrollments_update_advisor" ON public.enrollments FOR UPDATE USING (
   EXISTS (SELECT 1 FROM public.disciplines WHERE id = discipline_id AND advisor_id IN (
-    SELECT id FROM public.artists WHERE user_id = auth.uid() AND (type = 'advisor' OR role IN ('adm', 'moderador', 'orientador'))
+    SELECT id FROM public.artists WHERE user_id = auth.uid() AND (type = 'advisor' OR role IN ('adm', 'moderador', 'orientador', 'orientadora'))
   ))
 );

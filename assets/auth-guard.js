@@ -94,7 +94,8 @@ window.updateNav = async function(user) {
     role = data?.role || null;
   }
 
-  const canModerate = ["adm", "moderador", "orientador"].includes(role);
+  const normalizedRole = String(role || "").trim().toLowerCase();
+  const canModerate = ["adm", "moderador", "orientador", "orientadora"].includes(normalizedRole);
 
   let html = "";
   if (canModerate) {

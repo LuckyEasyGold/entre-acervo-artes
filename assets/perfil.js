@@ -11,6 +11,17 @@
   let works = [];
   let currentSection = "profile";
 
+  function normalizeRole(value) {
+    return String(value || "").trim().toLowerCase();
+  }
+
+  function isAdvisorProfile(profile) {
+    if (!profile) return false;
+    const role = normalizeRole(profile.role);
+    const type = normalizeRole(profile.type);
+    return type === "advisor" || role === "orientador" || role === "orientadora" || role === "adm" || role === "moderador";
+  }
+
   async function load() {
     const supabase = window.supabaseClient;
     if (!supabase) {
@@ -74,7 +85,7 @@
   }
 
   function renderSidebar() {
-    const isAdvisor = artist && (artist.type === "advisor" || artist.role === "orientador");
+    const isAdvisor = isAdvisorProfile(artist);
     const html = `
       <div class="perfil-layout">
         <aside class="perfil-sidebar">
@@ -128,7 +139,7 @@
 
   function renderProfile(container) {
     const a = artist || {};
-    const isAdvisor = a.type === "advisor" || a.role === "orientador";
+    const isAdvisor = isAdvisorProfile(a);
     const subtitle = isAdvisor
       ? [a.title, a.area].filter(Boolean).join(" · ")
       : (a.course || "");
@@ -373,11 +384,15 @@
 
   function renderWorks(container) {
     const list = (works || []).map(w => `
-      <article class="perfil-work">
+      <article class="perfil-work" data-id="${w.id}">
         <img src="${escapeHtml(w.image || w.file_url || '')}" alt="${escapeHtml(w.title || '')}">
         <div>
           <strong>${escapeHtml(w.title || '')}</strong>
           <small>${w.category || ''} · ${w.year || ''} · ${w.status || ''} · ${w.visibility || ''}</small>
+          <div style="margin-top:10px; display:flex; gap:8px; flex-wrap:wrap;">
+            <button type="button" class="btn btn-sm btn-dark edit-work" data-id="${w.id}">Editar</button>
+            <button type="button" class="btn btn-sm btn-outline delete-work" data-id="${w.id}">Excluir</button>
+          </div>
         </div>
       </article>
     `).join("") || '<p class="muted">Nenhuma obra cadastrada.</p>';
@@ -388,6 +403,65 @@
         <div class="perfil-works">${list}</div>
       </div>
     `;
+
+    container.querySelectorAll(".delete-work").forEach(button => {
+      button.addEventListener("click", async () => {
+        const workId = button.dataset.id;
+        if (!workId) return;
+        const confirmed = window.confirm("Tem certeza que deseja excluir esta obra do seu acervo?");
+        if (!confirmed) return;
+
+        const { error } = await window.supabaseClient
+          .from("works")
+          .delete()
+          .eq("id", workId);
+
+        if (error) {
+          alert("Erro ao excluir obra: " + error.message);
+          return;
+        }
+
+        works = (works || []).filter(w => w.id !== workId);
+        renderWorks(container);
+      });
+    });
+
+    container.querySelectorAll(".edit-work").forEach(button => {
+      button.addEventListener("click", async () => {
+        const workId = button.dataset.id;
+        const entry = (works || []).find(w => w.id === workId);
+        if (!entry) return;
+
+        const nextTitle = window.prompt("Título da obra:", entry.title || "");
+        if (nextTitle === null) return;
+
+        const nextDescription = window.prompt("Descrição da obra:", entry.description || "");
+        if (nextDescription === null) return;
+
+        const nextYear = window.prompt("Ano da obra:", String(entry.year || new Date().getFullYear()));
+        if (nextYear === null) return;
+
+        const payload = {
+          title: nextTitle.trim() || entry.title,
+          description: nextDescription.trim() || entry.description,
+          year: Number(nextYear) || entry.year || new Date().getFullYear(),
+          updated_at: new Date().toISOString()
+        };
+
+        const { error } = await window.supabaseClient
+          .from("works")
+          .update(payload)
+          .eq("id", workId);
+
+        if (error) {
+          alert("Erro ao atualizar obra: " + error.message);
+          return;
+        }
+
+        works = (works || []).map(w => w.id === workId ? { ...w, ...payload } : w);
+        renderWorks(container);
+      });
+    });
   }
 
   function escapeHtml(text) {
@@ -449,10 +523,12 @@
                 <strong>${escapeHtml(d.name)}</strong>
                 <small>${d.status === 'active' ? 'Ativa' : 'Fechada'} · ${new Date(d.created_at).toLocaleDateString()}</small>
                 <p>${escapeHtml(d.description || '')}</p>
-                <div style="margin-top:10px; display:flex; gap:8px;">
+                <div style="margin-top:10px; display:flex; gap:8px; flex-wrap:wrap;">
                   <button class="btn btn-sm btn-dark toggle-disc" data-id="${d.id}" data-status="${d.status}">
                     ${d.status === 'active' ? 'Fechar' : 'Reabrir'}
                   </button>
+                  <button class="btn btn-sm btn-dark edit-disc" data-id="${d.id}">Editar</button>
+                  <button class="btn btn-sm btn-outline delete-disc" data-id="${d.id}">Excluir</button>
                 </div>
               </div>
             </article>
@@ -525,6 +601,51 @@
         } else {
           window.location.reload();
         }
+      });
+    });
+
+    container.querySelectorAll(".edit-disc").forEach(btn => {
+      btn.addEventListener("click", async () => {
+        const id = btn.dataset.id;
+        const discipline = (disciplines || []).find(d => d.id === id);
+        if (!discipline) return;
+
+        const title = window.prompt("Nome da disciplina:", discipline.name || "");
+        if (title === null) return;
+        const description = window.prompt("Descrição da disciplina:", discipline.description || "");
+        if (description === null) return;
+
+        const { error } = await supabase
+          .from("disciplines")
+          .update({ name: title.trim() || discipline.name, description: description.trim() || discipline.description, updated_at: new Date().toISOString() })
+          .eq("id", id);
+
+        if (error) {
+          alert("Erro ao atualizar disciplina: " + error.message);
+          return;
+        }
+
+        window.location.reload();
+      });
+    });
+
+    container.querySelectorAll(".delete-disc").forEach(btn => {
+      btn.addEventListener("click", async () => {
+        const id = btn.dataset.id;
+        const confirmed = window.confirm("Tem certeza que deseja excluir esta disciplina?");
+        if (!confirmed) return;
+
+        const { error } = await supabase
+          .from("disciplines")
+          .delete()
+          .eq("id", id);
+
+        if (error) {
+          alert("Erro ao excluir disciplina: " + error.message);
+          return;
+        }
+
+        window.location.reload();
       });
     });
 

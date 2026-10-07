@@ -46,11 +46,13 @@
       console.warn("[disciplinas] perfil do orientador não encontrado:", err);
     }
 
+    const normalizedRole = String(me && me.role ? me.role : "").trim().toLowerCase();
     const isAdvisorProfile = !!me && (
       me.type === "advisor" ||
-      me.role === "orientador" ||
-      me.role === "adm" ||
-      me.role === "moderador"
+      normalizedRole === "orientador" ||
+      normalizedRole === "orientadora" ||
+      normalizedRole === "adm" ||
+      normalizedRole === "moderador"
     );
 
     if (!me || !isAdvisorProfile) {
@@ -117,12 +119,66 @@
                   <strong>${escapeHtml(d.name)}</strong>
                   <small>${d.status === 'active' ? 'Ativa' : 'Fechada'} · ${new Date(d.created_at).toLocaleDateString()}</small>
                   <p>${escapeHtml(d.description || '')}</p>
+                  <div style="margin-top:10px; display:flex; gap:8px; flex-wrap:wrap;">
+                    <button class="btn btn-sm btn-dark toggle-disc" data-id="${d.id}" data-status="${d.status}">${d.status === 'active' ? 'Fechar' : 'Reabrir'}</button>
+                    <button class="btn btn-sm btn-dark edit-disc" data-id="${d.id}">Editar</button>
+                    <button class="btn btn-sm btn-outline delete-disc" data-id="${d.id}">Excluir</button>
+                  </div>
                 </div>
               </article>
             `).join("")}
           </div>
         </div>
       `;
+
+      content.querySelectorAll(".toggle-disc").forEach(btn => {
+        btn.addEventListener("click", async () => {
+          const id = btn.dataset.id;
+          const status = btn.dataset.status === "active" ? "closed" : "active";
+          const { error } = await supabase.from("disciplines").update({ status }).eq("id", id);
+          if (error) {
+            alert("Erro: " + error.message);
+          } else {
+            window.location.reload();
+          }
+        });
+      });
+
+      content.querySelectorAll(".edit-disc").forEach(btn => {
+        btn.addEventListener("click", async () => {
+          const id = btn.dataset.id;
+          const discipline = disciplines.find(d => d.id === id);
+          if (!discipline) return;
+          const name = window.prompt("Nome da disciplina:", discipline.name || "");
+          if (name === null) return;
+          const description = window.prompt("Descrição da disciplina:", discipline.description || "");
+          if (description === null) return;
+          const { error } = await supabase.from("disciplines").update({
+            name: name.trim() || discipline.name,
+            description: description.trim() || discipline.description,
+            updated_at: new Date().toISOString()
+          }).eq("id", id);
+          if (error) {
+            alert("Erro ao atualizar disciplina: " + error.message);
+          } else {
+            window.location.reload();
+          }
+        });
+      });
+
+      content.querySelectorAll(".delete-disc").forEach(btn => {
+        btn.addEventListener("click", async () => {
+          const id = btn.dataset.id;
+          const confirmed = window.confirm("Tem certeza que deseja excluir esta disciplina?");
+          if (!confirmed) return;
+          const { error } = await supabase.from("disciplines").delete().eq("id", id);
+          if (error) {
+            alert("Erro ao excluir disciplina: " + error.message);
+          } else {
+            window.location.reload();
+          }
+        });
+      });
     }
 
     function renderForm() {

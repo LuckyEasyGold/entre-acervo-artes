@@ -20,7 +20,9 @@
   }
 
   const advisors = allArtists.filter(function(a) {
-    return !!a && (a.type === "advisor" || a.role === "orientador");
+    const role = String(a && a.role ? a.role : "").trim().toLowerCase();
+    const type = String(a && a.type ? a.type : "").trim().toLowerCase();
+    return !!a && (type === "advisor" || role === "orientador" || role === "orientadora" || role === "adm" || role === "moderador");
   });
   const grid = document.getElementById("orientadores-grid");
   const count = document.getElementById("advisors-count");

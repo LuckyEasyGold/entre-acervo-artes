@@ -32,7 +32,9 @@
   }
 
   function isAdvisorArtist(artist) {
-    return !!artist && (artist.type === "advisor" || artist.role === "orientador");
+    const role = String(artist && artist.role ? artist.role : "").trim().toLowerCase();
+    const type = String(artist && artist.type ? artist.type : "").trim().toLowerCase();
+    return !!artist && (type === "advisor" || role === "orientador" || role === "orientadora" || role === "adm" || role === "moderador");
   }
 
   function buildSocials(social) {
