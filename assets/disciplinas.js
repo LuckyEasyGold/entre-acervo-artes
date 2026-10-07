@@ -114,16 +114,24 @@
           <h2>Minhas disciplinas</h2>
           <div class="perfil-works">
             ${disciplines.map(d => `
-              <article class="perfil-work">
+              <article class="perfil-work disciplina-card" data-id="${d.id}">
                 <div>
                   <strong>${escapeHtml(d.name)}</strong>
                   <small>${d.status === 'active' ? 'Ativa' : 'Fechada'} · ${new Date(d.created_at).toLocaleDateString()}</small>
                   <p>${escapeHtml(d.description || '')}</p>
-                  <div style="margin-top:10px; display:flex; gap:8px; flex-wrap:wrap;">
-                    <button class="btn btn-sm btn-dark toggle-disc" data-id="${d.id}" data-status="${d.status}">${d.status === 'active' ? 'Fechar' : 'Reabrir'}</button>
-                    <button class="btn btn-sm btn-dark edit-disc" data-id="${d.id}">Editar</button>
-                    <button class="btn btn-sm btn-outline delete-disc" data-id="${d.id}">Excluir</button>
+                  <div class="discipline-actions">
+                    <button class="action-btn toggle-disc" data-id="${d.id}" data-status="${d.status}">${d.status === 'active' ? 'Fechar' : 'Reabrir'}</button>
+                    <button class="action-btn edit-disc" data-id="${d.id}">Editar</button>
+                    <button class="action-btn delete-disc" data-id="${d.id}">Excluir</button>
                   </div>
+                  <form class="perfil-form discipline-editor" data-id="${d.id}" style="display:none; margin-top:12px;">
+                    <label><span>Nome</span><input type="text" name="name" value="${escapeHtml(d.name || '')}" required></label>
+                    <label><span>Descrição</span><textarea name="description" rows="3">${escapeHtml(d.description || '')}</textarea></label>
+                    <div class="discipline-editor-actions">
+                      <button type="submit" class="action-btn save-disc">Salvar</button>
+                      <button type="button" class="action-btn cancel-edit">Cancelar</button>
+                    </div>
+                  </form>
                 </div>
               </article>
             `).join("")}
@@ -145,17 +153,27 @@
       });
 
       content.querySelectorAll(".edit-disc").forEach(btn => {
-        btn.addEventListener("click", async () => {
-          const id = btn.dataset.id;
-          const discipline = disciplines.find(d => d.id === id);
-          if (!discipline) return;
-          const name = window.prompt("Nome da disciplina:", discipline.name || "");
-          if (name === null) return;
-          const description = window.prompt("Descrição da disciplina:", discipline.description || "");
-          if (description === null) return;
+        btn.addEventListener("click", () => {
+          const card = btn.closest(".disciplina-card");
+          const form = card ? card.querySelector(".discipline-editor") : null;
+          if (!form) return;
+          form.style.display = form.style.display === "none" ? "block" : "none";
+        });
+      });
+
+      content.querySelectorAll(".discipline-editor").forEach(form => {
+        form.addEventListener("submit", async (e) => {
+          e.preventDefault();
+          const id = form.dataset.id;
+          const name = form.querySelector('[name="name"]').value.trim();
+          const description = form.querySelector('[name="description"]').value.trim();
+          if (!name) {
+            alert("Preencha o nome da disciplina.");
+            return;
+          }
           const { error } = await supabase.from("disciplines").update({
-            name: name.trim() || discipline.name,
-            description: description.trim() || discipline.description,
+            name,
+            description,
             updated_at: new Date().toISOString()
           }).eq("id", id);
           if (error) {
@@ -164,6 +182,13 @@
             window.location.reload();
           }
         });
+
+        const cancelBtn = form.querySelector(".cancel-edit");
+        if (cancelBtn) {
+          cancelBtn.addEventListener("click", () => {
+            form.style.display = "none";
+          });
+        }
       });
 
       content.querySelectorAll(".delete-disc").forEach(btn => {

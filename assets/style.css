@@ -2511,6 +2511,69 @@ nav a.active::after {
   color: var(--muted);
 }
 
+.discipline-actions,
+.discipline-editor-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.action-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 38px;
+  padding: 9px 14px;
+  border-radius: 999px;
+  border: 1px solid rgba(17, 17, 17, 0.16);
+  font: 10px var(--mono);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  backdrop-filter: blur(6px);
+}
+
+.action-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 24px rgba(20, 20, 20, 0.08);
+}
+
+.toggle-disc {
+  background: rgba(17, 17, 17, 0.06);
+  color: var(--ink);
+}
+
+.edit-disc {
+  background: rgba(204, 153, 0, 0.12);
+  border-color: rgba(204, 153, 0, 0.35);
+  color: #6b4f00;
+}
+
+.delete-disc {
+  background: rgba(181, 40, 40, 0.08);
+  border-color: rgba(181, 40, 40, 0.26);
+  color: #7d1d1d;
+}
+
+.save-disc {
+  background: rgba(18, 110, 75, 0.12);
+  border-color: rgba(18, 110, 75, 0.28);
+  color: #0f5132;
+}
+
+.cancel-edit {
+  background: rgba(95, 95, 95, 0.07);
+  border-color: rgba(95, 95, 95, 0.22);
+  color: var(--ink);
+}
+
+.discipline-editor {
+  padding-top: 8px;
+  border-top: 1px solid var(--line);
+}
+
 .btn-back {
   display: inline-flex;
   align-items: center;
