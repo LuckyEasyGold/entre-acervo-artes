@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="pt-BR">
+<head><meta charset="utf-8"><title>diag</title>
+<style>body{font:12px monospace}#f{border:1px solid #ccc;width:360px;height:640px;display:block}</style>
+</head>
+<body>
+<pre id="out">rodando...</pre>
+<iframe id="f"></iframe>
+<script>
+const iframe = document.getElementById("f");
+const out = document.getElementById("out");
+const FAKE = { id: "00000000-0000-0000-0000-000000000000", email: "aluno.teste@ifpr.edu.br" };
+
+function chain() {
+  const o = {};
+  ["select","eq","neq","order","limit","in","gte","lte","match","update","insert","upsert","delete"].forEach(m => { o[m] = () => o; });
+  o.single = () => Promise.resolve({ data: null, error: { message: "stub" } });
+  o.maybeSingle = o.single;
+  o.then = (res) => Promise.resolve({ data: [], error: null }).then(res);
+  o.catch = () => o;
+  return o;
+}
+const t = setInterval(() => {
+  try {
+    const w = iframe.contentWindow;
+    if (!w || !w.document) return;
+    w.getCurrentUser = async () => ({ user: FAKE, error: null });
+    w.supabaseClient = { from: () => chain(), auth: { getUser: async () => ({ data: { user: FAKE }, error: null }), getSession: async () => ({ data: { session: null }, error: null }), updateUser: async () => ({ data: null, error: null }), signOut: async () => ({ error: null }) } };
+  } catch (e) {}
+}, 10);
+
+iframe.onload = () => setTimeout(run, 3000);
+iframe.src = "perfil.html?diag=1";
+
+function run() {
+  clearInterval(t);
+  const doc = iframe.contentDocument, win = iframe.contentWindow;
+  const lines = [];
+  const desc = (root, sel) => Array.from(root.querySelectorAll(sel)).map(a => {
+    const r = a.getBoundingClientRect();
+    const cs = win.getComputedStyle(a);
+    return (a.textContent || a.tagName).trim().replace(/\s+/g, " ").slice(0, 24) + "[" + cs.display + "," + Math.round(r.width) + "x" + Math.round(r.height) + ",href=" + (a.getAttribute("href") || "-") + "]";
+  });
+
+  const navAuth = doc.querySelector(".topbar .nav-auth");
+  lines.push("topbar .nav-auth: " + (navAuth ? desc(navAuth, "a, button").join(" ") : "-"));
+  const drawer = doc.querySelector(".mobile-nav");
+  lines.push("drawer existe: " + !!drawer);
+  if (drawer) {
+    lines.push("drawer .mobile-nav-links: " + desc(drawer, ".mobile-nav-links a").join(" "));
+    lines.push("drawer .mobile-nav-auth: " + desc(drawer, ".mobile-nav-auth a, .mobile-nav-auth button").join(" "));
+  }
+  // confere se o drawer abre e mostra os links
+  const dot = doc.querySelector(".menu-dot");
+  if (dot) {
+    dot.dispatchEvent(new win.MouseEvent("click", { bubbles: true }));
+    lines.push("(clique no menu enviado)");
+  }
+  lines.push("overflow=" + (doc.documentElement.scrollWidth - doc.documentElement.clientWidth));
+  out.textContent = lines.join("\n");
+  document.title = "done";
+}
+</script>
+</body>
+</html>

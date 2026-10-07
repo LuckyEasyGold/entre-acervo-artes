@@ -1606,6 +1606,10 @@ footer .brand { color: var(--ink); }
 @media (max-width: 850px) {
   nav { display: none; }
   .menu-dot { display: flex; }
+  /* As ações de conta (Entrar / usuário / Sair) já são espelhadas dentro
+     do drawer; na topbar elas só deixavam o cabeçalho apertado e com
+     alvos de toque minúsculos. O botão do menu fica (é um .menu-dot). */
+  .nav-auth > a { display: none; }
   .topbar { height: 60px; }
   .hero {
     grid-template-columns: 1fr;
@@ -1645,6 +1649,11 @@ footer .brand { color: var(--ink); }
 
   .perfil-layout {
     grid-template-columns: 1fr !important;
+  }
+  /* Sem min-width:0 a faixa 1fr herda o min-content do conteudo e a
+     coluna fica mais larga que a tela em celulares estreitos. */
+  .perfil-layout > * {
+    min-width: 0;
   }
   .perfil-sidebar {
     position: static !important;
@@ -3174,6 +3183,9 @@ nav a.active::after {
   display: flex;
   flex-direction: column;
   gap: 6px;
+  /* Sem min-width:0 o min-content do input vira a largura da célula
+     do grid e o formulário estoura a tela em celulares estreitos. */
+  min-width: 0;
 }
 .perfil-form label.full {
   grid-column: 1 / -1;
@@ -3193,6 +3205,8 @@ nav a.active::after {
   font: 14px var(--sans);
   background: var(--paper);
   color: var(--ink);
+  min-width: 0;
+  max-width: 100%;
 }
 .perfil-form button {
   grid-column: 1 / -1;
@@ -3296,6 +3310,11 @@ nav a.active::after {
   }
   .galeria-main {
     grid-template-columns: 1fr;
+  }
+  /* Sem min-width:0 a faixa 1fr herda o min-content da lista de
+     categorias (que fica em nowrap no mobile) e estoura a tela. */
+  .galeria-main > * {
+    min-width: 0;
   }
   .galeria-sidebar {
     position: relative;

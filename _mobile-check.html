@@ -1,0 +1,204 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>mobile-check</title>
+<style>
+  body { font: 12px/1.4 monospace; margin: 8px; }
+  #f { border: 1px solid #ccc; display: block; margin-top: 8px; }
+  pre { white-space: pre-wrap; }
+</style>
+</head>
+<body>
+<pre id="out">rodando...</pre>
+<iframe id="f" title="alvo"></iframe>
+<script>
+const PAGES = [
+  "index.html", "home.html", "galeria.html", "alunos.html", "orientadores.html",
+  "acervo.html", "login.html", "redefinir-senha.html", "obra.html", "artista.html",
+  "perfil.html", "orientacao.html", "disciplinas.html", "moderacao.html"
+];
+const VIEWPORTS = [[360, 640], [390, 844], [414, 896], [768, 1024]];
+const AUTH_PAGES = ["perfil.html", "orientacao.html", "disciplinas.html", "moderacao.html"];
+const lines = [];
+const iframe = document.getElementById("f");
+let stubTimer = null;
+
+const FAKE_USER = { id: "00000000-0000-0000-0000-000000000000", email: "aluno.teste@ifpr.edu.br" };
+
+function chain() {
+  const o = {};
+  ["select", "eq", "neq", "order", "limit", "in", "gte", "lte", "match", "update", "insert", "upsert", "delete"].forEach(m => { o[m] = () => o; });
+  o.single = () => Promise.resolve({ data: null, error: { message: "stub" } });
+  o.maybeSingle = o.single;
+  o.then = (res) => Promise.resolve({ data: [], error: null }).then(res);
+  o.catch = () => o;
+  o.finally = () => o;
+  return o;
+}
+
+// Paginas autenticadas: substitui o cliente real por um stub que devolve
+// vazio. Assim o shell (topbar, sidebar, formularios) renderiza igual ao
+// producao, sem depender de sessao ou rede.
+function installStub() {
+  if (stubTimer) clearInterval(stubTimer);
+  stubTimer = setInterval(() => {
+    try {
+      const w = iframe.contentWindow;
+      if (!w || !w.document) return;
+      w.getCurrentUser = async () => ({ user: FAKE_USER, error: null });
+      w.supabaseClient = {
+        from: () => chain(),
+        auth: {
+          getUser: async () => ({ data: { user: FAKE_USER }, error: null }),
+          getSession: async () => ({ data: { session: null }, error: null }),
+          updateUser: async () => ({ data: null, error: null }),
+          signOut: async () => ({ error: null })
+        },
+        storage: { from: () => ({ upload: async () => ({ data: null, error: null }), getPublicUrl: () => ({ data: { publicUrl: "" } }) }) }
+      };
+    } catch (e) { /* navegacao em curso */ }
+  }, 10);
+}
+
+function stopStub() { if (stubTimer) clearInterval(stubTimer); stubTimer = null; }
+
+function wait(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+async function until(fn, ms) {
+  const t0 = Date.now();
+  while (Date.now() - t0 < ms) {
+    try { if (fn()) return true; } catch (e) { /* ainda carregando */ }
+    await wait(50);
+  }
+  return false;
+}
+
+function stamp(line) {
+  lines.push(line);
+  document.getElementById("out").textContent = lines.join("\n");
+  document.title = "done:" + lines.length;
+}
+
+function loadTarget(src) {
+  return new Promise(resolve => {
+    let done = false;
+    const finish = () => { if (!done) { done = true; resolve(); } };
+    iframe.onload = () => setTimeout(finish, 1500);
+    iframe.src = src;
+    setTimeout(finish, 7000);
+  });
+}
+
+function inScrollable(el, win) {
+  let n = el.parentElement;
+  while (n && n !== document.body) {
+    const cs = win.getComputedStyle(n);
+    if ((cs.overflowX === "auto" || cs.overflowX === "scroll") && n.scrollWidth > n.clientWidth + 1) return true;
+    n = n.parentElement;
+  }
+  return false;
+}
+
+function analyse(doc, win) {
+  const de = doc.documentElement;
+  const vw = de.clientWidth;
+  const out = { vw, scrollW: de.scrollWidth, overflow: de.scrollWidth - vw, offenders: [] };
+
+  doc.querySelectorAll("body *").forEach(el => {
+    if (el.classList.contains("grain")) return;
+    if (el.closest(".mobile-nav") || el.closest(".artist-profile")) return;
+    const r = el.getBoundingClientRect();
+    if (r.width < 2 || r.height < 2) return;
+    if (r.right > vw + 1 && !inScrollable(el, win)) {
+      out.offenders.push(
+        el.tagName.toLowerCase() +
+        (typeof el.className === "string" && el.className.trim() ? "." + el.className.trim().split(/\s+/).join(".") : "") +
+        "[w=" + Math.round(r.width) + ",right=" + Math.round(r.right) + "]"
+      );
+    }
+  });
+  out.offenders = out.offenders.slice(0, 3);
+
+  const small = [];
+  doc.querySelectorAll("a, button, [role=button], input:not([type=hidden]), select, textarea").forEach(el => {
+    const r = el.getBoundingClientRect();
+    if (r.width < 2 || r.height < 2) return;
+    const cs = win.getComputedStyle(el);
+    if (cs.display === "none" || cs.visibility === "hidden") return;
+    const parent = el.parentElement;
+    if (el.tagName === "A" && parent && ["P", "SPAN", "LI"].includes(parent.tagName)) return;
+    if (r.height < 32) small.push(el.tagName.toLowerCase() + "." + String(el.className).trim().split(/\s+/)[0] + " " + Math.round(r.width) + "x" + Math.round(r.height));
+  });
+  out.small = small.slice(0, 5);
+  out.smallCount = small.length;
+  out.dots = doc.querySelectorAll(".menu-dot").length;
+  out.bgvideo = doc.querySelectorAll("#bg-video").length;
+
+  out.strips = [];
+  [".perfil-sidebar", ".profile-tabs", ".filter-list", ".mod-tabs", ".perfil-content", ".perfil-layout"].forEach(sel => {
+    const el = doc.querySelector(sel);
+    if (!el) return;
+    const r = el.getBoundingClientRect();
+    out.strips.push(sel + "=" + Math.round(r.width) + (el.scrollWidth > el.clientWidth + 1 ? "(rola " + el.scrollWidth + ")" : ""));
+  });
+  return out;
+}
+
+async function run() {
+  for (const page of PAGES) {
+    const needsAuth = AUTH_PAGES.includes(page);
+    for (const [w, h] of VIEWPORTS) {
+      iframe.style.width = w + "px";
+      iframe.style.height = h + "px";
+      if (needsAuth) installStub(); else stopStub();
+      await loadTarget(page + "?mc=1");
+      if (needsAuth) {
+        await until(() => {
+          const d = iframe.contentDocument;
+          return d && (d.querySelector(".perfil-layout") || d.querySelector(".auth-error") || d.querySelector(".mod-tabs") || d.querySelector(".mod-list"));
+        }, 5000);
+      }
+      let line;
+      try {
+        const doc = iframe.contentDocument;
+        const win = iframe.contentWindow;
+        if (!doc || !doc.documentElement) throw new Error("sem documento");
+        const landed = win.location.pathname.split("/").pop() || "?";
+        const a = analyse(doc, win);
+        line = `${page} @${w}x${h} | overflow=${a.overflow}${a.overflow > 0 ? " (" + a.scrollW + ">" + a.vw + ")" : ""} | dots=${a.dots} | pequenos=${a.smallCount} | bgvideo=${a.bgvideo}`;
+        if (landed !== page) line += " | REDIRECT->" + landed;
+        if (a.offenders.length) line += "\n    estoura: " + a.offenders.join(" ; ");
+        if (a.small.length) line += "\n    alvos<32: " + a.small.join(" ; ");
+        if (a.strips.length) line += "\n    faixas: " + a.strips.join(" ; ");
+
+        const dot = doc.querySelector(".menu-dot");
+        if (dot) {
+          const nav = doc.querySelector(".mobile-nav");
+          const snap = el => el ? { vis: win.getComputedStyle(el).visibility, op: win.getComputedStyle(el).opacity } : { vis: "-", op: "-" };
+          const before = snap(nav);
+          dot.dispatchEvent(new win.MouseEvent("click", { bubbles: true }));
+          await wait(400);
+          const after = snap(nav);
+          line += `\n    drawer: FECHADO(vis=${before.vis},op=${before.op}) ABERTO(classe=${nav ? nav.classList.contains("open") : "-"},vis=${after.vis},op=${after.op})`;
+          const closeBtn = doc.querySelector(".mobile-nav-close");
+          if (closeBtn) {
+            closeBtn.dispatchEvent(new win.MouseEvent("click", { bubbles: true }));
+            await wait(400);
+            line += ` FECHOU(vis=${snap(nav).vis})`;
+          }
+        }
+      } catch (e) {
+        line = `${page} @${w}x${h} | ERRO ${e.message}`;
+      }
+      stopStub();
+      stamp(line);
+    }
+  }
+  stamp("=== FIM ===");
+}
+
+window.addEventListener("load", () => { run(); });
+</script>
+</body>
+</html>
