@@ -3,6 +3,16 @@
 // ============================================
 
 (async function() {
+  function escapeHtml(text) {
+    if (text == null) return "";
+    return String(text)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#039;");
+  }
+
   const main = document.getElementById("perfil-main");
   if (!main) return;
 
@@ -54,11 +64,16 @@
       .eq("advisor_id", me.id)
       .order("created_at", { ascending: false });
 
-    const { data: enrollments } = await supabase
-      .from("enrollments")
-      .select("*, artist:artists(id, name, course)")
-      .in("discipline_id", (disciplines || []).map(d => d.id))
-      .order("created_at", { ascending: true });
+    const disciplineIds = (disciplines || []).map(d => d.id);
+    let enrollments = [];
+    if (disciplineIds.length > 0) {
+      const { data } = await supabase
+        .from("enrollments")
+        .select("*, artist:artists(id, name, course)")
+        .in("discipline_id", disciplineIds)
+        .order("created_at", { ascending: true });
+      enrollments = data || [];
+    }
 
     main.innerHTML = `
       <div class="perfil-layout">
@@ -99,9 +114,9 @@
             ${disciplines.map(d => `
               <article class="perfil-work">
                 <div>
-                  <strong>${d.name}</strong>
+                  <strong>${escapeHtml(d.name)}</strong>
                   <small>${d.status === 'active' ? 'Ativa' : 'Fechada'} · ${new Date(d.created_at).toLocaleDateString()}</small>
-                  <p>${d.description || ''}</p>
+                  <p>${escapeHtml(d.description || '')}</p>
                 </div>
               </article>
             `).join("")}
@@ -165,9 +180,9 @@
             ${pending.map(e => `
               <article class="perfil-work">
                 <div>
-                  <strong>${e.artist?.name || 'Aluno'}</strong>
-                  <small>${e.artist?.course || ''}</small>
-                  <p>${e.message || ''}</p>
+                  <strong>${escapeHtml(e.artist?.name || 'Aluno')}</strong>
+                  <small>${escapeHtml(e.artist?.course || '')}</small>
+                  <p>${escapeHtml(e.message || '')}</p>
                   <div style="margin-top:10px; display:flex; gap:8px;">
                     <button class="btn btn-sm btn-dark approve-enrollment" data-id="${e.id}">Aprovar</button>
                     <button class="btn btn-sm btn-outline reject-enrollment" data-id="${e.id}">Recusar</button>
@@ -183,8 +198,8 @@
             ${others.map(e => `
               <article class="perfil-work">
                 <div>
-                  <strong>${e.artist?.name || 'Aluno'}</strong>
-                  <small>${e.artist?.course || ''} · ${e.status}</small>
+                  <strong>${escapeHtml(e.artist?.name || 'Aluno')}</strong>
+                  <small>${escapeHtml(e.artist?.course || '')} · ${escapeHtml(e.status)}</small>
                 </div>
               </article>
             `).join("") || "<p>Nenhuma inscrição.</p>"}

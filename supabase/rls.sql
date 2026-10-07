@@ -20,17 +20,48 @@ DROP POLICY IF EXISTS "categories_select_public" ON public.categories;
 CREATE POLICY "categories_select_public" ON public.categories FOR SELECT USING (true);
 
 -- ============================================
+-- Helper: o usuário atual é moderação?
+-- SECURITY DEFINER evita recursão de RLS ao ler a própria tabela artists
+-- ============================================
+CREATE OR REPLACE FUNCTION public.is_staff()
+RETURNS boolean
+LANGUAGE sql
+STABLE
+SECURITY DEFINER
+SET search_path = public
+AS $$
+  SELECT EXISTS (
+    SELECT 1 FROM public.artists a
+    WHERE a.user_id = auth.uid()
+      AND a.role IN ('adm', 'moderador')
+  );
+$$;
+GRANT EXECUTE ON FUNCTION public.is_staff() TO anon, authenticated;
+
+-- ============================================
 -- Policies: artists
 -- ============================================
+-- Público enxerga apenas perfis aprovados e ativos (sem expor pendentes/desativados)
 DROP POLICY IF EXISTS "artists_select_public" ON public.artists;
-CREATE POLICY "artists_select_public" ON public.artists FOR SELECT USING (true);
+CREATE POLICY "artists_select_public" ON public.artists FOR SELECT USING (
+  status = 'approved' AND disabled IS NOT TRUE
+);
+-- Cada usuário enxerga a própria linha (cadastro, login e edição de perfil)
+DROP POLICY IF EXISTS "artists_select_own" ON public.artists;
+CREATE POLICY "artists_select_own" ON public.artists FOR SELECT USING (auth.uid() = user_id);
+-- Moderação enxerga todos (pendentes, desativados, etc.)
+DROP POLICY IF EXISTS "artists_select_staff" ON public.artists;
+CREATE POLICY "artists_select_staff" ON public.artists FOR SELECT USING (public.is_staff());
 DROP POLICY IF EXISTS "artists_insert_own" ON public.artists;
 CREATE POLICY "artists_insert_own" ON public.artists FOR INSERT WITH CHECK (auth.uid() = user_id);
 DROP POLICY IF EXISTS "artists_update_own" ON public.artists;
 CREATE POLICY "artists_update_own" ON public.artists FOR UPDATE USING (auth.uid() = user_id);
 DROP POLICY IF EXISTS "artists_update_moderator" ON public.artists;
 CREATE POLICY "artists_update_moderator" ON public.artists FOR UPDATE USING (
-  EXISTS (SELECT 1 FROM public.artists WHERE id = artists.id AND role IN ('adm', 'moderador') AND user_id = auth.uid())
+  EXISTS (
+    SELECT 1 FROM public.artists m
+    WHERE m.user_id = auth.uid() AND m.role IN ('adm', 'moderador')
+  )
 );
 DROP POLICY IF EXISTS "artists_delete_own" ON public.artists;
 CREATE POLICY "artists_delete_own" ON public.artists FOR DELETE USING (auth.uid() = user_id);
@@ -62,14 +93,14 @@ CREATE POLICY "works_delete_own" ON public.works FOR DELETE USING (
 -- ============================================
 DROP POLICY IF EXISTS "advisor_votes_select_own" ON public.advisor_votes;
 CREATE POLICY "advisor_votes_select_own" ON public.advisor_votes FOR SELECT USING (
-  EXISTS (SELECT 1 FROM public.artists WHERE id = advisor_id AND user_id = auth.uid())
+  EXISTS (SELECT 1 FROM public.artists WHERE artists.id = advisor_votes.advisor_id AND artists.user_id = auth.uid())
 );
 DROP POLICY IF EXISTS "advisor_votes_insert_own" ON public.advisor_votes;
 CREATE POLICY "advisor_votes_insert_own" ON public.advisor_votes FOR INSERT WITH CHECK (
   EXISTS (
     SELECT 1
     FROM public.artists a
-    WHERE a.id = advisor_id
+    WHERE a.id = advisor_votes.advisor_id
       AND a.user_id = auth.uid()
       AND (a.type = 'advisor' OR a.role IN ('adm', 'moderador', 'orientador'))
   )
@@ -80,16 +111,16 @@ CREATE POLICY "advisor_votes_insert_own" ON public.advisor_votes FOR INSERT WITH
 -- ============================================
 DROP POLICY IF EXISTS "advisor_requests_select_own" ON public.advisor_requests;
 CREATE POLICY "advisor_requests_select_own" ON public.advisor_requests FOR SELECT USING (
-  EXISTS (SELECT 1 FROM public.artists WHERE id = artist_id AND user_id = auth.uid())
-  OR EXISTS (SELECT 1 FROM public.artists WHERE id = advisor_id AND user_id = auth.uid())
+  EXISTS (SELECT 1 FROM public.artists WHERE artists.id = advisor_requests.artist_id AND artists.user_id = auth.uid())
+  OR EXISTS (SELECT 1 FROM public.artists WHERE artists.id = advisor_requests.advisor_id AND artists.user_id = auth.uid())
 );
 DROP POLICY IF EXISTS "advisor_requests_insert_own" ON public.advisor_requests;
 CREATE POLICY "advisor_requests_insert_own" ON public.advisor_requests FOR INSERT WITH CHECK (
-  EXISTS (SELECT 1 FROM public.artists WHERE id = artist_id AND user_id = auth.uid())
+  EXISTS (SELECT 1 FROM public.artists WHERE artists.id = advisor_requests.artist_id AND artists.user_id = auth.uid())
 );
 DROP POLICY IF EXISTS "advisor_requests_update_advisor" ON public.advisor_requests;
 CREATE POLICY "advisor_requests_update_advisor" ON public.advisor_requests FOR UPDATE USING (
-  EXISTS (SELECT 1 FROM public.artists WHERE id = advisor_id AND user_id = auth.uid())
+  EXISTS (SELECT 1 FROM public.artists WHERE artists.id = advisor_requests.advisor_id AND artists.user_id = auth.uid())
 );
 
 -- ============================================
@@ -102,7 +133,7 @@ CREATE POLICY "disciplines_insert_advisor" ON public.disciplines FOR INSERT WITH
   EXISTS (
     SELECT 1
     FROM public.artists a
-    WHERE a.id = advisor_id
+    WHERE a.id = disciplines.advisor_id
       AND a.user_id = auth.uid()
       AND (a.type = 'advisor' OR a.role IN ('adm', 'moderador', 'orientador'))
   )
@@ -112,7 +143,7 @@ CREATE POLICY "disciplines_update_advisor" ON public.disciplines FOR UPDATE USIN
   EXISTS (
     SELECT 1
     FROM public.artists a
-    WHERE a.id = advisor_id
+    WHERE a.id = disciplines.advisor_id
       AND a.user_id = auth.uid()
       AND (a.type = 'advisor' OR a.role IN ('adm', 'moderador', 'orientador'))
   )
@@ -122,7 +153,7 @@ CREATE POLICY "disciplines_delete_advisor" ON public.disciplines FOR DELETE USIN
   EXISTS (
     SELECT 1
     FROM public.artists a
-    WHERE a.id = advisor_id
+    WHERE a.id = disciplines.advisor_id
       AND a.user_id = auth.uid()
       AND (a.type = 'advisor' OR a.role IN ('adm', 'moderador', 'orientador'))
   )

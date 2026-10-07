@@ -3,6 +3,16 @@
 // ============================================
 
 (async function() {
+  function escapeHtml(text) {
+    if (text == null) return "";
+    return String(text)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#039;");
+  }
+
   const main = document.getElementById("perfil-main");
   if (!main) return;
 
@@ -51,6 +61,13 @@
       .select("*")
       .eq("artist_id", me.id);
 
+    const { data: advisorsList } = await supabase
+      .from("artists")
+      .select("id, name, title, area")
+      .eq("type", "advisor")
+      .eq("status", "approved")
+      .order("name", { ascending: true });
+
     main.innerHTML = `
       <div class="perfil-layout">
         <aside class="perfil-sidebar">
@@ -89,9 +106,9 @@
               return `
                 <article class="perfil-work">
                   <div>
-                    <strong>${d.name}</strong>
-                    <small>${d.advisor?.name || ''} · ${d.advisor?.title || ''}</small>
-                    <p>${d.description || ''}</p>
+                    <strong>${escapeHtml(d.name)}</strong>
+                    <small>${escapeHtml(d.advisor?.name || '')} · ${escapeHtml(d.advisor?.title || '')}</small>
+                    <p>${escapeHtml(d.description || '')}</p>
                     ${enrolled
                       ? `<button class="btn btn-sm btn-outline" disabled>Inscrito</button>`
                       : `<button class="btn btn-sm btn-dark enroll-btn" data-id="${d.id}">Inscrever-se</button>`
@@ -139,7 +156,7 @@
             <label><span>Orientador</span>
               <select id="advisor-id" required>
                 <option value="">Selecione...</option>
-                ${disciplines?.map(d => `<option value="${d.advisor?.id}">${d.advisor?.name} — ${d.advisor?.title || ''}</option>`).join("") || ""}
+                ${(advisorsList || []).map(a => `<option value="${escapeHtml(a.id)}">${escapeHtml(a.name)} — ${escapeHtml(a.title || a.area || '')}</option>`).join("") || ""}
               </select>
             </label>
             <label><span>Mensagem</span><textarea id="advisor-message" rows="3" placeholder="Conte um pouco sobre seu trabalho e expectativas..."></textarea></label>
@@ -191,7 +208,7 @@
                 <div>
                   <strong>Orientação</strong>
                   <small>Status: ${pendingReq.status}</small>
-                  <p>${pendingReq.message || ''}</p>
+                  <p>${escapeHtml(pendingReq.message || '')}</p>
                 </div>
               </article>
             ` : ''}
@@ -200,7 +217,7 @@
                 <div>
                   <strong>Inscrição em disciplina</strong>
                   <small>Status: ${e.status}</small>
-                  <p>${e.message || ''}</p>
+                  <p>${escapeHtml(e.message || '')}</p>
                 </div>
               </article>
             `).join("") || ''}
@@ -208,7 +225,7 @@
               <article class="perfil-work">
                 <div>
                   <strong>Inscrição aprovada</strong>
-                  <small>${e.discipline_id}</small>
+                  <small>${escapeHtml(e.discipline_id)}</small>
                 </div>
               </article>
             `).join("") || ''}

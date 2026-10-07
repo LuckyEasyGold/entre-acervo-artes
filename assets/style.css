@@ -50,13 +50,6 @@ img { display: block; max-width: 100%; }
   background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
 }
 
-/* --- Background Video --- */
-#bg-video {
-  position: fixed; inset: 0; width: 100%; height: 100%;
-  object-fit: cover; z-index: -1; pointer-events: none;
-  opacity: 0.15;
-}
-
 /* --- Typography --- */
 .eyebrow {
   font-family: var(--mono);
@@ -3415,4 +3408,157 @@ nav a.active::after {
 .no-copy {
   user-select: none;
   -webkit-user-select: none;
+}
+
+/* ============================================
+   MOBILE UX — melhorias (append)
+   ============================================ */
+
+:root {
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-right: env(safe-area-inset-right, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-left: env(safe-area-inset-left, 0px);
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+a, button, .perfil-nav-item, .auth-tab, .filter {
+  -webkit-tap-highlight-color: rgba(26, 26, 46, 0.12);
+  touch-action: manipulation;
+}
+
+/* Cabeçalho respeitando notch e altura dinâmica do navegador mobile */
+.topbar {
+  padding-left: calc(4vw + var(--safe-left));
+  padding-right: calc(4vw + var(--safe-right));
+  padding-top: var(--safe-top);
+  height: calc(64px + var(--safe-top));
+}
+
+.mobile-nav-inner {
+  padding-top: calc(24px + var(--safe-top));
+  padding-bottom: calc(24px + var(--safe-bottom));
+  padding-right: calc(24px + var(--safe-right));
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.mobile-nav-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+.mobile-nav-brand {
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  font-size: 15px;
+}
+.mobile-nav-links { display: flex; flex-direction: column; }
+.mobile-nav-auth {
+  display: flex;
+  flex-direction: column;
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid var(--line-strong);
+}
+.mobile-nav-auth a {
+  border-bottom-color: transparent;
+  font-weight: 600;
+}
+.mobile-nav-logout { color: #b91c1c; }
+.mobile-nav-close {
+  width: 44px;
+  height: 44px;
+  font-size: 16px;
+}
+.mobile-nav a {
+  min-height: 48px;
+  display: flex;
+  align-items: center;
+}
+
+footer {
+  padding-bottom: calc(24px + var(--safe-bottom));
+}
+
+/* Reveal de conteúdo e botões grandes o suficiente para o dedo */
+.btn,
+.auth-tab,
+.filter,
+button {
+  min-height: 44px;
+}
+.text-button,
+.password-toggle {
+  min-height: 44px;
+}
+
+@media (max-width: 850px) {
+  /* Evita zoom automático do iOS ao focar campos */
+  input,
+  select,
+  textarea {
+    font-size: 16px !important;
+  }
+
+  /* Sidebar do perfil e abas viram faixas roláveis horizontalmente */
+  .perfil-sidebar,
+  .dashboard-sidebar,
+  .profile-tabs,
+  .galeria-sidebar .filter-list,
+  .filter-list {
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    flex-wrap: nowrap;
+  }
+  .perfil-sidebar::-webkit-scrollbar,
+  .dashboard-sidebar::-webkit-scrollbar,
+  .profile-tabs::-webkit-scrollbar,
+  .filter-list::-webkit-scrollbar { display: none; }
+
+  .perfil-nav-item,
+  .dashboard-sidebar ul,
+  .profile-tab {
+    white-space: nowrap;
+    flex: 0 0 auto;
+    min-height: 44px;
+  }
+
+  /* Tabelas/listas largas rolam em vez de estourar a tela */
+  .perfil-section,
+  .obra-detail,
+  .curriculum-meta,
+  .dash-section {
+    min-width: 0;
+  }
+
+  .perfil-content { padding: 20px 16px 48px; }
+
+  .btn { min-height: 48px; }
+}
+
+@media (max-width: 520px) {
+  /* Botões de ação dentro de cards não devem virar faixa de largura total */
+  .perfil-work .btn,
+  .perfil-works .btn { width: 100%; }
+
+  .mobile-nav-inner { width: 92vw; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
 }

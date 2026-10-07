@@ -112,7 +112,7 @@
         renderDisciplines(content);
         break;
       case "orientation":
-        renderOrientation(content);
+        window.location.href = "orientacao.html";
         break;
       case "publish":
         renderPublish(content);
@@ -212,6 +212,9 @@
             const payload = {
               ...data,
               user_id: currentUser.id,
+              type: "student",
+              role: "artista",
+              status: "pending",
               id: "artist-" + Date.now() + "-" + Math.random().toString(36).slice(2, 8)
             };
             const { data: inserted, error } = await window.supabaseClient.from("artists").insert(payload).select().single();
@@ -349,6 +352,12 @@
         });
 
         if (error) throw error;
+        const { data: refreshedWorks } = await window.supabaseClient
+          .from("works")
+          .select("*")
+          .eq("artist_id", artist.id)
+          .order("created_at", { ascending: false });
+        works = refreshedWorks || works;
         setUploadStatus("Obra salva com sucesso!");
         alert("Obra salva!");
         showSection("works");
@@ -365,7 +374,7 @@
   function renderWorks(container) {
     const list = (works || []).map(w => `
       <article class="perfil-work">
-        <img src="${w.file_url || ''}" alt="${escapeHtml(w.title || '')}">
+        <img src="${escapeHtml(w.image || w.file_url || '')}" alt="${escapeHtml(w.title || '')}">
         <div>
           <strong>${escapeHtml(w.title || '')}</strong>
           <small>${w.category || ''} · ${w.year || ''} · ${w.status || ''} · ${w.visibility || ''}</small>
@@ -381,145 +390,6 @@
     `;
   }
 
-  function renderSecurity(container) {
-    container.innerHTML = `
-      <div class="perfil-section">
-        <h2>Alterar senha</h2>
-        <form id="password-form" class="perfil-form">
-          <label><span>Senha atual</span><input type="password" id="sec-current-password" required></label>
-          <label><span>Nova senha</span><input type="password" id="sec-new-password" required minlength="6"></label>
-          <button type="submit" class="btn btn-dark">Atualizar senha</button>
-        </form>
-      </div>
-      <div class="perfil-section">
-        <h2>Alterar e-mail</h2>
-        <form id="email-form" class="perfil-form">
-          <label><span>Novo e-mail</span><input type="email" id="sec-new-email" required></label>
-          <button type="submit" class="btn btn-dark">Atualizar e-mail</button>
-        </form>
-      </div>
-    `;
-
-    document.getElementById("password-form").addEventListener("submit", async e => {
-      e.preventDefault();
-      const currentPassword = document.getElementById("sec-current-password").value;
-      const newPassword = document.getElementById("sec-new-password").value;
-
-      try {
-        const { error } = await window.supabaseClient.auth.updateUser({ password: newPassword });
-        if (error) {
-          alert("Erro: " + error.message);
-        } else {
-          alert("Senha atualizada!");
-          document.getElementById("password-form").reset();
-        }
-      } catch (err) {
-        alert("Erro: " + err.message);
-      }
-    });
-
-    document.getElementById("email-form").addEventListener("submit", async e => {
-      e.preventDefault();
-      const newEmail = document.getElementById("sec-new-email").value.trim();
-
-      try {
-        const { error } = await window.supabaseClient.auth.updateUser({ email: newEmail });
-        if (error) {
-          alert("Erro: " + error.message);
-        } else {
-          alert("E-mail atualizado! Você pode precisar confirmar o novo e-mail.");
-          document.getElementById("email-form").reset();
-        }
-      } catch (err) {
-        alert("Erro: " + err.message);
-      }
-    });
-  }
-
-  async function renderAdvisor(container) {
-    if (!artist || !artist.id) {
-      container.innerHTML = "<p>Complete seu perfil primeiro.</p>";
-      return;
-    }
-
-    const { data: advisors } = await window.supabaseClient
-      .from("artists")
-      .select("id, name, area, title")
-      .eq("type", "advisor")
-      .eq("status", "approved");
-
-    const currentAdvisor = artist.advisor_id
-      ? advisors?.find(a => a.id === artist.advisor_id)
-      : null;
-
-    let html = `
-      <div class="perfil-section">
-        <h2>Meu orientador</h2>
-        <p class="muted">Escolha um orientador responsável por suas publicações.</p>
-    `;
-
-    if (currentAdvisor) {
-      html += `
-        <div class="perfil-work" style="margin-bottom:16px;">
-          <strong>${currentAdvisor.name}</strong>
-          <small>${currentAdvisor.title || ''} · ${currentAdvisor.area || ''}</small>
-        </div>
-      `;
-    }
-
-    html += `
-        <form id="advisor-form" class="perfil-form">
-          <label><span>Orientador</span>
-            <select id="advisor-select">
-              <option value="">Selecione um orientador...</option>
-              ${(advisors || []).map(a => `
-                <option value="${a.id}" ${a.id === artist.advisor_id ? 'selected' : ''}>${a.name} — ${a.area || a.title || ''}</option>
-              `).join("")}
-            </select>
-          </label>
-          <label><span>Mensagem (opcional)</span>
-            <textarea id="advisor-message" rows="2" placeholder="Gostaria de ser orientado por você..."></textarea>
-          </label>
-          <button type="submit" class="btn btn-dark">Solicitar orientação</button>
-        </form>
-      </div>
-    `;
-
-    container.innerHTML = html;
-
-    const form = document.getElementById("advisor-form");
-    if (form) {
-      form.addEventListener("submit", async e => {
-        e.preventDefault();
-        const advisorId = document.getElementById("advisor-select").value;
-        const message = document.getElementById("advisor-message").value.trim();
-
-        if (!advisorId) {
-          alert("Selecione um orientador.");
-          return;
-        }
-
-        const requestId = "req-" + Date.now() + "-" + Math.random().toString(36).slice(2, 8);
-        const { error } = await window.supabaseClient
-          .from("advisor_requests")
-          .insert({
-            id: requestId,
-            artist_id: artist.id,
-            advisor_id: advisorId,
-            message: message,
-            status: "pending"
-          });
-
-        if (error) {
-          alert("Erro: " + error.message);
-        } else {
-          alert("Solicitação enviada! Aguarde o orientador aprovar.");
-          form.reset();
-        }
-      });
-    }
-  }
-
   function escapeHtml(text) {
     if (!text) return "";
     return text
@@ -528,22 +398,6 @@
       .replace(/>/g, "&gt;")
       .replace(/"/g, "&quot;")
       .replace(/'/g, "&#039;");
-  }
-
-  async function loadAdvisors() {
-    const supabase = window.supabaseClient;
-    if (!supabase) return [];
-    try {
-      const { data } = await supabase
-        .from("artists")
-        .select("id, name, area, title")
-        .eq("type", "advisor")
-        .eq("status", "approved");
-      return data || [];
-    } catch (err) {
-      console.warn("[perfil] load advisors warning:", err);
-      return [];
-    }
   }
 
   async function renderDisciplines(container) {
@@ -565,11 +419,16 @@
       .eq("advisor_id", a.id)
       .order("created_at", { ascending: false });
 
-    const { data: enrollments } = await supabase
-      .from("enrollments")
-      .select("*, artist:artists(id, name, course)")
-      .in("discipline_id", (disciplines || []).map(d => d.id))
-      .order("created_at", { ascending: true });
+    const disciplineIds = (disciplines || []).map(d => d.id);
+    let enrollments = [];
+    if (disciplineIds.length > 0) {
+      const { data } = await supabase
+        .from("enrollments")
+        .select("*, artist:artists(id, name, course)")
+        .in("discipline_id", disciplineIds)
+        .order("created_at", { ascending: true });
+      enrollments = data || [];
+    }
 
     container.innerHTML = `
       <div class="perfil-section">
@@ -587,9 +446,9 @@
           ${(disciplines || []).map(d => `
             <article class="perfil-work">
               <div>
-                <strong>${d.name}</strong>
+                <strong>${escapeHtml(d.name)}</strong>
                 <small>${d.status === 'active' ? 'Ativa' : 'Fechada'} · ${new Date(d.created_at).toLocaleDateString()}</small>
-                <p>${d.description || ''}</p>
+                <p>${escapeHtml(d.description || '')}</p>
                 <div style="margin-top:10px; display:flex; gap:8px;">
                   <button class="btn btn-sm btn-dark toggle-disc" data-id="${d.id}" data-status="${d.status}">
                     ${d.status === 'active' ? 'Fechar' : 'Reabrir'}
@@ -604,9 +463,9 @@
           ${(enrollments || []).map(e => `
             <article class="perfil-work">
               <div>
-                <strong>${e.artist?.name || 'Aluno'}</strong>
-                <small>${e.artist?.course || ''} · ${e.status}</small>
-                <p>${e.message || ''}</p>
+                <strong>${escapeHtml(e.artist?.name || 'Aluno')}</strong>
+                <small>${escapeHtml(e.artist?.course || '')} · ${escapeHtml(e.status)}</small>
+                <p>${escapeHtml(e.message || '')}</p>
                 ${e.status === 'pending' ? `
                   <div style="margin-top:10px; display:flex; gap:8px;">
                     <button class="btn btn-sm btn-dark approve-enr" data-id="${e.id}">Aprovar</button>
