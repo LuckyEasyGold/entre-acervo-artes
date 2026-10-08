@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <title>Sobre — ENTRE</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Manrope:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,500;0,600;1,500;1,600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/style.css">
+  <script src="assets/config.js"></script>
+  <script src="assets/supabase.js"></script>
+</head>
+<body>
+  <div class="grain"></div>
+  <header class="topbar">
+    <a class="brand" href="home.html"><span>ENTRE</span><small>acervo de artes · IFPR</small></a>
+    <nav>
+      <a href="galeria.html">Galeria</a>
+      <a href="alunos.html">Alunos</a>
+      <a href="orientadores.html">Orientadores</a>
+      <a href="acervo.html">Acervo</a>
+      <a href="sobre.html" class="active">Sobre</a>
+    </nav>
+    <div class="nav-auth" id="nav-auth"></div>
+  </header>
+
+  <main class="sobre-main">
+    <section class="sobre-hero">
+      <p class="eyebrow">SOBRE O ENTRE</p>
+      <h1>Uma vitrine para a arte, a pesquisa e o aprendizado.</h1>
+      <p class="intro">
+        O ENTRE nasce para reunir em um mesmo espaço a produção artística, a pesquisa acadêmica e a formação dos estudantes de Artes Visuais do IFPR Campus Palmas.
+        A proposta é dar visibilidade ao processo criativo dos alunos e dos orientadores, mostrando não apenas o resultado final, mas também a diversidade de caminhos, temas e formas de produção que circulam no curso.
+      </p>
+    </section>
+
+    <section class="sobre-grid">
+      <article class="sobre-card">
+        <p class="eyebrow">01 · GALERIA</p>
+        <h2>Arte e imagem em circulação.</h2>
+        <p>
+          A galeria pública reúne obras visuais: fotografias, pinturas, desenhos, vídeos, performances e outras produções de mídia. Esse espaço funciona como vitrine de criação, com foco em imagens e registros de processos artísticos.
+        </p>
+      </article>
+
+      <article class="sobre-card">
+        <p class="eyebrow">02 · ACERVO</p>
+        <h2>Texto, pesquisa e produção acadêmica.</h2>
+        <p>
+          O acervo documental reúne artigos, TCCs, textos, publicações, PDFs e arquivos escritos. Ele funciona como espaço de memória intelectual e de circulação do conhecimento produzido no curso, valorizando a pesquisa e a escrita como parte da criação.
+        </p>
+      </article>
+
+      <article class="sobre-card wide">
+        <p class="eyebrow">03 · PERFIL DOS ARTISTAS</p>
+        <h2>Um portfólio vivo para cada pessoa.</h2>
+        <p>
+          No perfil do aluno e do orientador, a produção é organizada por contexto. Na aba Produções aparecem os textos, artigos e documentos; no Acervo aparecem as mídias e os registros visuais. Isso permite que cada pessoa apresente sua produção completa sem misturar formatos diferentes de expressão.
+        </p>
+      </article>
+    </section>
+
+    <section class="sobre-section">
+      <p class="eyebrow">COMO FUNCIONA</p>
+      <h2>Uma lógica pensada para separar tipo de conteúdo e status de publicação.</h2>
+      <ul class="sobre-list">
+        <li><strong>Galeria pública:</strong> mostra apenas mídias, como imagem, vídeo e áudio.</li>
+        <li><strong>Acervo público:</strong> reúne textos e documentos, como artigos, PDFs, DOCs e arquivos acadêmicos.</li>
+        <li><strong>Produções no perfil:</strong> apresentam links para textos e arquivos documentais.</li>
+        <li><strong>Acervo do perfil:</strong> mostra as mídias do usuário, incluindo rascunhos, com indicação clara de status.</li>
+        <li><strong>Orientação:</strong> professores e orientadores também são artistas e pesquisadores, e ajudam a formar e divulgar o trabalho dos alunos.</li>
+      </ul>
+    </section>
+
+    <section class="sobre-cta">
+      <p class="eyebrow">PARTICIPAR</p>
+      <h2>Alunos e orientadores compartilham a produção do curso em um espaço comum.</h2>
+      <p>
+        O ENTRE foi pensado como uma plataforma de visibilidade, formação e circulação de ideias. Ele conecta a arte, a pesquisa e a orientação em uma mesma rede de criação, fortalecendo o trabalho coletivo da comunidade acadêmica.
+      </p>
+      <div class="sobre-actions">
+        <a class="btn btn-dark" href="home.html">Explorar projetos</a>
+        <a class="btn btn-light" href="login.html">Entrar no painel</a>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="brand"><span>ENTRE</span><small>acervo de artes · IFPR Campus Palmas</small></div>
+    <div>Um projeto experimental para a comunidade artística.</div>
+    <div>2026 ©</div>
+  </footer>
+
+  <script src="assets/auth-guard.js"></script>
+  <script src="assets/mobile-nav.js"></script>
+  <script>
+    setTimeout(function() {
+      try {
+        if (typeof window.initAuthGuard === "function") {
+          window.initAuthGuard();
+        } else {
+          console.warn("[sobre] initAuthGuard não disponível");
+        }
+      } catch (e) {
+        console.error("[sobre] initAuthGuard error:", e);
+      }
+    }, 500);
+  </script>
+</body>
+</html>

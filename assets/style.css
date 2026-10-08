@@ -3613,6 +3613,112 @@ a, button, .perfil-nav-item, .auth-tab, .filter {
   align-items: center;
 }
 
+.sobre-main {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 80px 7vw 100px;
+}
+
+.sobre-hero {
+  margin-bottom: 48px;
+  padding-bottom: 30px;
+  border-bottom: 1px solid var(--line);
+}
+
+.sobre-hero h1 {
+  max-width: 760px;
+  font-size: clamp(2.5rem, 5vw, 5rem);
+  line-height: 0.96;
+  margin: 12px 0 18px;
+}
+
+.sobre-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 20px;
+  margin-bottom: 48px;
+}
+
+.sobre-card {
+  background: rgba(255,255,255,0.55);
+  border: 1px solid rgba(15, 15, 15, 0.08);
+  border-radius: 22px;
+  padding: 26px 24px;
+  box-shadow: 0 12px 28px rgba(20, 18, 15, 0.04);
+}
+
+.sobre-card h2,
+.sobre-section h2,
+.sobre-cta h2 {
+  margin: 10px 0 12px;
+  font-family: var(--serif);
+  font-size: clamp(1.7rem, 3vw, 2.4rem);
+  line-height: 1.1;
+}
+
+.sobre-card.wide {
+  grid-column: span 2;
+}
+
+.sobre-section {
+  padding-top: 8px;
+  margin-bottom: 52px;
+}
+
+.sobre-list {
+  margin: 22px 0 0;
+  padding-left: 18px;
+  display: grid;
+  gap: 12px;
+  color: var(--ink);
+  line-height: 1.8;
+}
+
+.sobre-list li {
+  list-style: disc;
+}
+
+.sobre-cta {
+  background: linear-gradient(135deg, rgba(15,15,15,0.96), rgba(35,31,25,0.92));
+  color: var(--paper);
+  border-radius: 30px;
+  padding: clamp(28px, 4vw, 48px);
+  box-shadow: 0 24px 60px rgba(15, 15, 15, 0.14);
+}
+
+.sobre-cta .eyebrow,
+.sobre-cta h2,
+.sobre-cta p {
+  color: var(--paper);
+}
+
+.sobre-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+.btn-light {
+  background: transparent;
+  border: 1px solid rgba(255,255,255,0.3);
+  color: var(--paper);
+}
+
+.btn-light:hover {
+  background: rgba(255,255,255,0.08);
+}
+
+@media (max-width: 860px) {
+  .sobre-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .sobre-card.wide {
+    grid-column: auto;
+  }
+}
+
 footer {
   padding-bottom: calc(24px + var(--safe-bottom));
 }
