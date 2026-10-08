@@ -11,12 +11,43 @@ function findArtist(id) {
   return allArtists.find(a => a.id === id);
 }
 
-function findWorksFor(artist) {
+function getWorkTypeKey(work) {
+  if (!work) return "";
+  const raw = String(work.file_type || "").trim().toLowerCase();
+  if (raw) return raw;
+  const url = String(work.file_url || work.image || work.image_url || "").toLowerCase();
+  if (work.youtube_url) return "video";
+  if (/\.(pdf|doc|docx|txt|rtf|odt)$/i.test(url)) return "document";
+  if (/\.(mp4|mov|webm|mp3|wav|ogg|m4a)$/i.test(url)) return "video";
+  if (/\.(jpg|jpeg|png|gif|webp|bmp|svg)$/i.test(url)) return "image";
+  return "";
+}
+
+function isMediaWork(work) {
+  if (!work) return false;
+  const type = getWorkTypeKey(work);
+  if (work.youtube_url) return true;
+  return ["image", "video", "audio", "jpg", "jpeg", "png", "gif", "webp", "bmp", "svg", "mp4", "mov", "webm", "mp3", "wav", "ogg", "m4a"].includes(type);
+}
+
+function isTextWork(work) {
+  const type = getWorkTypeKey(work);
+  return ["pdf", "doc", "docx", "txt", "rtf", "odt", "document"].includes(type) || /\.(pdf|doc|docx|txt|rtf|odt)$/i.test(String(work.file_url || work.image || work.image_url || ""));
+}
+
+function isVisibleForContext(work, isOwner = false) {
+  const status = String(work && work.status ? work.status : "published").toLowerCase();
+  return isOwner || status !== "draft";
+}
+
+function findWorksFor(artist, predicate = () => true, isOwner = false) {
   return allWorks.filter(w => {
     const workArtistId = w.artist_id || w.artistId || (w.artists && w.artists.id) || (w.artist && w.artist.id);
-    if (workArtistId && workArtistId === artist.id) return true;
-    if (artist.works && Array.isArray(artist.works) && artist.works.includes(w.id)) return true;
-    return false;
+    const matchArtist = workArtistId && workArtistId === artist.id;
+    const matchWorkList = artist.works && Array.isArray(artist.works) && artist.works.includes(w.id);
+    if (!(matchArtist || matchWorkList)) return false;
+    if (!predicate(w)) return false;
+    return isVisibleForContext(w, isOwner);
   });
 }
 
@@ -104,15 +135,16 @@ function renderCurriculo(artist) {
     </div>`;
 }
 
-function renderProducoes(artist) {
-  if (!isAdvisorArtist(artist)) return "";
-  const works = findWorksFor(artist);
+function renderProducoes(artist, isOwner = false) {
+  const works = findWorksFor(artist, isTextWork, isOwner);
   const prods = Array.isArray(artist.academicProductions) && artist.academicProductions.length ? artist.academicProductions : works.map(w => ({
-    type: (w.file_type || '').toUpperCase() || 'PUBLICAÇÃO',
+    type: (w.file_type || 'PDF').toString().toUpperCase(),
     title: w.title,
-    publisher: w.category || 'Acervo',
+    publisher: w.category || 'Acervo documental',
     journal: '',
-    year: w.year
+    year: w.year,
+    url: w.file_url || w.image || w.image_url || '#',
+    status: w.status || 'published'
   }));
 
   if (!prods.length) {
@@ -126,14 +158,17 @@ function renderProducoes(artist) {
     <div class="tab-pane" data-pane="producoes">
       <p class="eyebrow">PRODUÇÕES ACADÊMICAS · ${prods.length}</p>
       <ul class="productions-list">
-        ${prods.map(p => `
-          <li>
-            <span class="prod-type">${(p.type || 'PUBLICAÇÃO').toString().toUpperCase()}</span>
-            <div>
-              <strong>${p.title || 'Produção'}</strong>
-              <small>${[p.publisher, p.journal, p.year].filter(Boolean).join(' · ')}</small>
-            </div>
-          </li>`).join("")}
+        ${prods.map(p => {
+          const statusText = String(p.status || 'published').toLowerCase() === 'draft' ? 'Rascunho' : 'Publicado';
+          return `
+            <li>
+              <span class="prod-type">${(p.type || 'PDF').toString().toUpperCase()}</span>
+              <div>
+                <strong><a href="${p.url || '#'}" target="_blank" rel="noopener">${p.title || 'Produção'}</a></strong>
+                <small>${[p.publisher, p.journal, p.year, statusText].filter(Boolean).join(' · ')}</small>
+              </div>
+            </li>`;
+        }).join("")}
       </ul>
     </div>`;
 }
@@ -165,13 +200,14 @@ function renderAlunos(artist) {
     </div>`;
 }
 
-function renderAcervo(artist) {
-  const works = findWorksFor(artist);
+function renderAcervo(artist, isOwner = false) {
+  const works = findWorksFor(artist, isMediaWork, isOwner);
   if (!works.length) {
+    const emptyMessage = isOwner ? 'Nenhuma mídia no acervo. Você pode criar uma nova obra em "Publicar obra".' : 'Nenhuma mídia publicada.';
     return `
       <div class="tab-pane" data-pane="acervo">
         <p class="eyebrow">ACERVO</p>
-        <p class="muted">Nenhuma obra publicada.</p>
+        <p class="muted">${emptyMessage}</p>
       </div>`;
   }
   return `
@@ -179,20 +215,18 @@ function renderAcervo(artist) {
       <p class="eyebrow">ACERVO · ${works.length} ${works.length === 1 ? 'obra' : 'obras'}</p>
       <div class="acervo-grid">
         ${works.map(w => {
-          const isPdf = (w.file_type || '').toLowerCase() === 'pdf' || String(w.file_url || '').toLowerCase().endsWith('.pdf');
-          const visual = isPdf
-            ? '<div class="visual pdf-visual"><span>PDF</span></div>'
-            : `<div class="visual"><img src="${w.image || w.file_url || w.image_url || ''}" alt="${w.title}" loading="lazy"></div>`;
+          const statusBadge = String(w.status || 'published').toLowerCase() === 'draft' ? '<span class="work-status draft">Rascunho</span>' : '<span class="work-status published">Publicado</span>';
           return `
-            <article class="work profile-work">
-              ${visual}
-              <div class="work-info">
-                <div>
-                  <div class="work-title">${w.title}</div>
-                  <small>${w.year || ''} · ${w.category || ''}</small>
-                </div>
+          <article class="work profile-work">
+            <div class="visual"><img src="${w.image || w.file_url || w.image_url || ''}" alt="${w.title}" loading="lazy"></div>
+            <div class="work-info">
+              <div>
+                <div class="work-title">${w.title}</div>
+                <small>${w.year || ''} · ${w.category || ''}</small>
               </div>
-            </article>`;
+              ${statusBadge}
+            </div>
+          </article>`;
         }).join("")}
       </div>
     </div>`;
@@ -209,7 +243,7 @@ function showArtistProfile(artist, index, ctx = {}) {
     tabButton("Sobre", "sobre", true)
   ];
   if (isAdvisor) tabs.push(tabButton("Currículo", "curriculo"));
-  if (isAdvisor) tabs.push(tabButton("Produções", "producoes"));
+  tabs.push(tabButton("Produções", "producoes"));
   if (isAdvisor) tabs.push(tabButton("Alunos", "alunos"));
   tabs.push(tabButton("Acervo", "acervo"));
 
@@ -217,9 +251,9 @@ function showArtistProfile(artist, index, ctx = {}) {
   const panes = [
     renderAbout(artist, isOwner),
     isAdvisor ? renderCurriculo(artist) : "",
-    isAdvisor ? renderProducoes(artist) : "",
+    renderProducoes(artist, isOwner),
     isAdvisor ? renderAlunos(artist) : "",
-    renderAcervo(artist)
+    renderAcervo(artist, isOwner)
   ].filter(Boolean).join("");
 
   const profile = document.getElementById("artist-profile");

@@ -285,9 +285,9 @@
           </label>
           <label><span>Ano</span><input type="number" id="work-year" value="${new Date().getFullYear()}"></label>
           <label><span>Descrição</span><textarea id="work-description" rows="3"></textarea></label>
-          <label><span>Link da imagem (Pinterest público)</span><input type="url" id="work-image" placeholder="https://pinterest.com/pin/..."></label>
+          <label><span>Capa da publicação (obrigatória para PDF, DOC, TXT e textos)</span><input type="url" id="work-image" placeholder="https://.../capa.jpg"></label>
           <label><span>Link do YouTube (vídeo público)</span><input type="url" id="work-youtube" placeholder="https://youtube.com/..."></label>
-          <label><span>Arquivo (imagem, vídeo ou PDF)</span><input type="file" id="work-file" accept="image/*,video/*,.pdf"></label>
+          <label><span>Arquivo (imagem, vídeo, áudio ou documento textual)</span><input type="file" id="work-file" accept="image/*,video/*,audio/*,.pdf,.doc,.docx,.txt,.rtf"></label>
           <div id="work-upload-status" style="display:none; margin:8px 0; color:#6b4f00; font-size:0.9rem; font-weight:600;"></div>
           <label><span>Visibilidade</span>
             <select id="work-visibility">
@@ -327,8 +327,16 @@
       const imageUrl = document.getElementById("work-image").value.trim() || null;
       const file = document.getElementById("work-file").files[0];
 
+      const extFromFile = file ? file.name.split(".").pop().toLowerCase() : "";
+      const isTextDocument = ["pdf","doc","docx","txt","rtf","odt"].includes(extFromFile) || !!(file && file.type && /text\/|application\/pdf|msword|vnd\.openxmlformats-officedocument|officedocument/.test(file.type));
+
       if (!imageUrl && !file && !youtube_url) {
         alert("Selecione uma imagem, um arquivo ou um link de vídeo para publicar a obra.");
+        return;
+      }
+
+      if (isTextDocument && !imageUrl) {
+        alert("Para PDF, DOC, TXT ou qualquer texto, é obrigatório informar uma imagem de capa da publicação.");
         return;
       }
 
@@ -342,8 +350,10 @@
 
           const ext = file.name.split(".").pop().toLowerCase();
           if (["jpg","jpeg","png","gif","webp"].includes(ext)) file_type = "image";
-          else if (["mp4","mov","webm"].includes(ext)) file_type = "video";
-          else if (ext === "pdf") file_type = "pdf";
+          else if (["mp4","mov","webm","mp3","wav","ogg","m4a"].includes(ext)) file_type = ext;
+          else if (["pdf","doc","docx","txt","rtf","odt"].includes(ext)) file_type = ext;
+          else if (file.type && /application\/pdf/.test(file.type)) file_type = "pdf";
+          else if (file.type && /text\//.test(file.type)) file_type = "txt";
 
           const path = `${artist.id}/${Date.now()}_${file.name}`;
           const { error: upErr } = await window.supabaseClient.storage.from("works").upload(path, file);
@@ -422,9 +432,9 @@
             </label>
             <label><span>Ano</span><input type="number" name="year" value="${w.year || new Date().getFullYear()}"></label>
             <label><span>Descrição</span><textarea name="description" rows="3">${escapeHtml(w.description || '')}</textarea></label>
-            <label><span>Link da imagem</span><input type="url" name="image" value="${escapeHtml(w.image || w.file_url || '')}"></label>
+            <label><span>Capa da publicação</span><input type="url" name="image" value="${escapeHtml(w.image || w.file_url || '')}" placeholder="https://.../capa.jpg"></label>
             <label><span>Link do YouTube</span><input type="url" name="youtube_url" value="${escapeHtml(w.youtube_url || '')}"></label>
-            <label><span>Arquivo (opcional)</span><input type="file" name="file" accept="image/*,video/*,.pdf"></label>
+            <label><span>Arquivo (opcional)</span><input type="file" name="file" accept="image/*,video/*,audio/*,.pdf,.doc,.docx,.txt,.rtf"></label>
             <label><span>Visibilidade</span>
               <select name="visibility">
                 <option value="public" ${w.visibility === 'public' ? 'selected' : ''}>Pública</option>
@@ -504,12 +514,22 @@
         let file_type = entry.file_type || null;
         let image = (formData.get("image") || "").toString().trim() || entry.image || null;
 
+        const ext = file && file.size > 0 ? file.name.split(".").pop().toLowerCase() : "";
+        const isTextDocumentUpdate = ["pdf","doc","docx","txt","rtf","odt"].includes(ext) || !!(file && file.type && /text\/|application\/pdf|msword|vnd\.openxmlformats-officedocument|officedocument/.test(file.type));
+
+        if (isTextDocumentUpdate && !image) {
+          alert("Para PDF, DOC, TXT ou qualquer texto, é obrigatório informar a imagem de capa da publicação.");
+          return;
+        }
+
         if (file && file.size > 0) {
           const ext = file.name.split(".").pop().toLowerCase();
           let nextType = null;
           if (["jpg", "jpeg", "png", "gif", "webp"].includes(ext)) nextType = "image";
-          else if (["mp4", "mov", "webm"].includes(ext)) nextType = "video";
-          else if (ext === "pdf") nextType = "pdf";
+          else if (["mp4", "mov", "webm", "mp3", "wav", "ogg", "m4a"].includes(ext)) nextType = ext;
+          else if (["pdf","doc","docx","txt","rtf","odt"].includes(ext)) nextType = ext;
+          else if (file.type && /application\/pdf/.test(file.type)) nextType = "pdf";
+          else if (file.type && /text\//.test(file.type)) nextType = "txt";
 
           const path = `${artist.id}/${Date.now()}_${file.name}`;
           const { error: upErr } = await window.supabaseClient.storage.from("works").upload(path, file);
