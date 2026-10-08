@@ -411,7 +411,8 @@
 
           const ext = file.name.split(".").pop().toLowerCase();
           if (["jpg","jpeg","png","gif","webp"].includes(ext)) file_type = "image";
-          else if (["mp4","mov","webm","mp3","wav","ogg","m4a"].includes(ext)) file_type = ext;
+          else if (["mp4","mov","webm"].includes(ext)) file_type = "video";
+          else if (["mp3","wav","ogg","m4a"].includes(ext) || file.type?.startsWith("audio/")) file_type = "audio";
           else if (["pdf","doc","docx","txt","rtf","odt"].includes(ext)) file_type = ext;
           else if (file.type && /application\/pdf/.test(file.type)) file_type = "pdf";
           else if (file.type && /text\//.test(file.type)) file_type = "txt";
@@ -565,6 +566,15 @@
 
         const ext = file && file.size > 0 ? file.name.split(".").pop().toLowerCase() : "";
         const isTextDocumentUpdate = ["pdf","doc","docx","txt","rtf","odt"].includes(ext) || !!(file && file.type && /text\/|application\/pdf|msword|vnd\.openxmlformats-officedocument|officedocument/.test(file.type));
+
+        if (file && file.size > 0) {
+          if (["jpg","jpeg","png","gif","webp"].includes(ext)) file_type = "image";
+          else if (["mp4","mov","webm"].includes(ext)) file_type = "video";
+          else if (["mp3","wav","ogg","m4a"].includes(ext) || file.type?.startsWith("audio/")) file_type = "audio";
+          else if (["pdf","doc","docx","txt","rtf","odt"].includes(ext)) file_type = ext;
+          else if (file.type && /application\/pdf/.test(file.type)) file_type = "pdf";
+          else if (file.type && /text\//.test(file.type)) file_type = "txt";
+        }
 
         if (isTextDocumentUpdate && !image) {
           alert("Para PDF, DOC, TXT ou qualquer texto, é obrigatório informar a imagem de capa da publicação.");

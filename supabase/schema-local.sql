@@ -32,7 +32,7 @@ CREATE TABLE IF NOT EXISTS public.works (
   description TEXT,
   image TEXT,
   file_url TEXT,
-  file_type TEXT CHECK (file_type IN ('image', 'video', 'pdf', 'youtube')),
+  file_type TEXT CHECK (file_type IN ('image', 'video', 'audio', 'pdf', 'youtube')),
   youtube_url TEXT,
   external_links JSONB DEFAULT '[]'::jsonb,
   status TEXT DEFAULT 'draft' CHECK (status IN ('draft', 'published')),

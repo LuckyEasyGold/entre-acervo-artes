@@ -18,7 +18,8 @@ function getWorkTypeKey(work) {
   const url = String(work.file_url || work.image || work.image_url || "").toLowerCase();
   if (work.youtube_url) return "video";
   if (/\.(pdf|doc|docx|txt|rtf|odt)$/i.test(url)) return "document";
-  if (/\.(mp4|mov|webm|mp3|wav|ogg|m4a)$/i.test(url)) return "video";
+  if (/\.(mp3|wav|ogg|m4a)$/i.test(url)) return "audio";
+  if (/\.(mp4|mov|webm)$/i.test(url)) return "video";
   if (/\.(jpg|jpeg|png|gif|webp|bmp|svg)$/i.test(url)) return "image";
   return "";
 }

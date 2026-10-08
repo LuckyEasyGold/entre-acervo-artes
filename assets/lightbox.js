@@ -62,6 +62,8 @@
       html += `<iframe src="${youtube}" allow="autoplay; encrypted-media" allowfullscreen style="width:100%;aspect-ratio:16/9;border:none;border-radius:12px;"></iframe>`;
     } else if (fileType === "video" && fileUrl) {
       html += `<video src="${fileUrl}" controls style="width:100%;border-radius:12px;background:#000;"></video>`;
+    } else if (fileType === "audio" && fileUrl) {
+      html += `<audio src="${fileUrl}" controls style="width:100%;"></audio>`;
     } else if (fileType === "pdf" && fileUrl) {
       html += `<iframe src="${fileUrl}" style="width:100%;height:60vh;border:none;border-radius:12px;"></iframe>`;
     } else if (image) {

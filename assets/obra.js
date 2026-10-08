@@ -49,6 +49,8 @@
   let mediaHtml = "";
   if (fileType === "video" && fileUrl) {
     mediaHtml = `<video src="${fileUrl}" controls></video>`;
+  } else if (fileType === "audio" && fileUrl) {
+    mediaHtml = `<audio src="${fileUrl}" controls style="width:100%;"></audio>`;
   } else if (fileType === "youtube" && work.youtube_url) {
     const m = work.youtube_url.match(/(?:youtu\.be\/|v=)([\w-]+)/);
     const embed = m ? `https://www.youtube.com/embed/${m[1]}` : work.youtube_url;
