@@ -6,13 +6,24 @@
   let allArtists = Array.isArray(window.__ARTISTS__) ? window.__ARTISTS__ : [];
   let allWorks = Array.isArray(window.__WORKS__) ? window.__WORKS__ : [];
 
+  function normalizeAdvisorToken(value) {
+    return String(value || "")
+      .trim()
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/[^a-z]/g, "");
+  }
+
   function isAdvisorArtist(a) {
     if (!a) return false;
-    const role = String(a.role || "").trim().toLowerCase();
-    const type = String(a.type || "").trim().toLowerCase();
+    const role = normalizeAdvisorToken(a.role);
+    const type = normalizeAdvisorToken(a.type);
     const status = String(a.status || "approved").trim().toLowerCase();
     if (status === "rejected") return false;
-    return type === "advisor" || ["orientador", "orientadora", "adm", "moderador"].includes(role);
+    if (type === "advisor" || type === "orientador" || type === "orientadora" || type === "adm" || type === "moderador") return true;
+    if (role.includes("orientador") || role.includes("adm") || role.includes("moderador")) return true;
+    return false;
   }
 
   function renderAdvisors(artists) {

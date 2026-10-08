@@ -12,14 +12,21 @@
   let currentSection = "profile";
 
   function normalizeRole(value) {
-    return String(value || "").trim().toLowerCase();
+    return String(value || "")
+      .trim()
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/[^a-z]/g, "");
   }
 
   function isAdvisorProfile(profile) {
     if (!profile) return false;
     const role = normalizeRole(profile.role);
     const type = normalizeRole(profile.type);
-    return type === "advisor" || role === "orientador" || role === "orientadora" || role === "adm" || role === "moderador";
+    if (type === "advisor" || type === "orientador" || type === "orientadora" || type === "adm" || type === "moderador") return true;
+    if (role.includes("orientador") || role.includes("adm") || role.includes("moderador")) return true;
+    return false;
   }
 
   async function load() {

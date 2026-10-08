@@ -31,10 +31,22 @@
     });
   }
 
+  function normalizeAdvisorToken(value) {
+    return String(value || "")
+      .trim()
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/[^a-z]/g, "");
+  }
+
   function isAdvisorArtist(artist) {
-    const role = String(artist && artist.role ? artist.role : "").trim().toLowerCase();
-    const type = String(artist && artist.type ? artist.type : "").trim().toLowerCase();
-    return !!artist && (type === "advisor" || role === "orientador" || role === "orientadora" || role === "adm" || role === "moderador");
+    if (!artist) return false;
+    const role = normalizeAdvisorToken(artist.role);
+    const type = normalizeAdvisorToken(artist.type);
+    if (type === "advisor" || type === "orientador" || type === "orientadora" || type === "adm" || type === "moderador") return true;
+    if (role.includes("orientador") || role.includes("adm") || role.includes("moderador")) return true;
+    return false;
   }
 
   function buildSocials(social) {
