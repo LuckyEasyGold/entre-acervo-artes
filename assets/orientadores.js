@@ -6,6 +6,14 @@
   let allArtists = Array.isArray(window.__ARTISTS__) ? window.__ARTISTS__ : [];
   let allWorks = Array.isArray(window.__WORKS__) ? window.__WORKS__ : [];
 
+  async function waitForSupabaseClient(maxAttempts = 30) {
+    for (let attempt = 0; attempt < maxAttempts; attempt += 1) {
+      if (window.supabaseClient) return window.supabaseClient;
+      await new Promise(resolve => setTimeout(resolve, 200));
+    }
+    return window.supabaseClient || null;
+  }
+
   function normalizeAdvisorToken(value) {
     return String(value || "")
       .trim()
@@ -53,7 +61,7 @@
 
   async function refreshData() {
     try {
-      const supabase = window.supabaseClient;
+      const supabase = await waitForSupabaseClient();
       if (supabase) {
         const { data: artists } = await supabase.from("artists").select("*");
         if (Array.isArray(artists) && artists.length) {

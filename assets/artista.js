@@ -216,15 +216,23 @@
     });
   }
 
+  async function waitForSupabaseClient(maxAttempts = 30) {
+    for (let attempt = 0; attempt < maxAttempts; attempt += 1) {
+      if (window.supabaseClient) return window.supabaseClient;
+      await new Promise(resolve => setTimeout(resolve, 200));
+    }
+    return window.supabaseClient || null;
+  }
+
   async function load() {
     try {
-      const supabase = window.supabaseClient;
+      const supabase = await waitForSupabaseClient();
       if (supabase) {
         try {
           const { data: artists } = await supabase.from("artists").select("*");
           const { data: works } = await supabase.from("works").select("*");
-          if (artists) allArtists = artists;
-          if (works) allWorks = works;
+          if (Array.isArray(artists) && artists.length) allArtists = artists;
+          if (Array.isArray(works) && works.length) allWorks = works;
         } catch (e) {}
       }
 

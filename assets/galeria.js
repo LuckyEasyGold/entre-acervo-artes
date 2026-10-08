@@ -4,8 +4,16 @@
 
 var currentFilter = "all";
 
+async function waitForSupabaseClient(maxAttempts = 30) {
+  for (let attempt = 0; attempt < maxAttempts; attempt += 1) {
+    if (window.supabaseClient) return window.supabaseClient;
+    await new Promise(resolve => setTimeout(resolve, 200));
+  }
+  return window.supabaseClient || null;
+}
+
 async function loadData() {
-  const supabase = window.supabaseClient;
+  const supabase = await waitForSupabaseClient();
 
   if (supabase) {
     try {
@@ -14,8 +22,8 @@ async function loadData() {
         .select("*, artists(name, image, id)")
         .eq("status", "published");
       const { data: artists, error: aErr } = await supabase.from("artists").select("*");
-      if (!wErr && Array.isArray(works)) allWorks = works;
-      if (!aErr && Array.isArray(artists)) allArtists = artists;
+      if (!wErr && Array.isArray(works) && works.length) allWorks = works;
+      if (!aErr && Array.isArray(artists) && artists.length) allArtists = artists;
     } catch (e) {
       console.warn("[galeria] Supabase falhou", e);
     }

@@ -3,7 +3,15 @@
 // ============================================
 
 (async function() {
-  const supabase = window.supabaseClient;
+  async function waitForSupabaseClient(maxAttempts = 30) {
+    for (let attempt = 0; attempt < maxAttempts; attempt += 1) {
+      if (window.supabaseClient) return window.supabaseClient;
+      await new Promise(resolve => setTimeout(resolve, 200));
+    }
+    return window.supabaseClient || null;
+  }
+
+  const supabase = await waitForSupabaseClient();
   let works = [];
 
   if (supabase) {
