@@ -53,8 +53,23 @@
     const desc = work.description || "";
     const image = work.image || work.image_url || work.file_url || "";
     const youtube = work.youtube_url || "";
-    const fileType = work.file_type || "";
     const fileUrl = work.file_url || "";
+
+    function normalizeMediaType(value, url = "") {
+      const normalized = String(value || "").trim().toLowerCase();
+      if (["audio", "mp3", "wav", "ogg", "m4a"].includes(normalized)) return "audio";
+      if (["video", "mp4", "mov", "webm"].includes(normalized)) return "video";
+      if (["pdf", "doc", "docx", "txt", "rtf", "odt", "document"].includes(normalized)) return "pdf";
+      if (["image", "jpg", "jpeg", "png", "gif", "webp", "bmp", "svg"].includes(normalized)) return "image";
+      if (normalized === "youtube" || /youtube|youtu\.be/.test(url)) return "youtube";
+      if (/\.(mp3|wav|ogg|m4a)$/i.test(url)) return "audio";
+      if (/\.(mp4|mov|webm)$/i.test(url)) return "video";
+      if (/\.(pdf|doc|docx|txt|rtf|odt)$/i.test(url)) return "pdf";
+      if (/\.(jpg|jpeg|png|gif|webp|bmp|svg)$/i.test(url)) return "image";
+      return normalized || "image";
+    }
+
+    const fileType = normalizeMediaType(work.file_type || "", fileUrl || image);
 
     let html = "";
 
@@ -63,7 +78,15 @@
     } else if (fileType === "video" && fileUrl) {
       html += `<video src="${fileUrl}" controls style="width:100%;border-radius:12px;background:#000;"></video>`;
     } else if (fileType === "audio" && fileUrl) {
-      html += `<audio src="${fileUrl}" controls style="width:100%;"></audio>`;
+      html += `
+        <div class="audio-mini-player">
+          <div class="audio-mini-meta">
+            <span>Áudio</span>
+            <strong>${(title || "Arquivo de áudio").replace(/</g, "&lt;").replace(/>/g, "&gt;")}</strong>
+          </div>
+          <audio src="${fileUrl}" controls preload="metadata" playsinline></audio>
+        </div>
+      `;
     } else if (fileType === "pdf" && fileUrl) {
       html += `<iframe src="${fileUrl}" style="width:100%;height:60vh;border:none;border-radius:12px;"></iframe>`;
     } else if (image) {

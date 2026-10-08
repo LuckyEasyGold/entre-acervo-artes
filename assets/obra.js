@@ -45,12 +45,40 @@
   }
 
   const fileUrl = work.file_url || work.image || work.image_url || "";
-  const fileType = work.file_type || (work.youtube_url ? "youtube" : "image");
+
+  function normalizeMediaType(value, url = "") {
+    const normalized = String(value || "").trim().toLowerCase();
+    const audioValues = ["audio", "mp3", "wav", "ogg", "m4a"];
+    const videoValues = ["video", "mp4", "mov", "webm"];
+    const imageValues = ["image", "jpg", "jpeg", "png", "gif", "webp", "bmp", "svg"];
+    const pdfValues = ["pdf", "doc", "docx", "txt", "rtf", "odt", "document"];
+
+    if (audioValues.includes(normalized)) return "audio";
+    if (videoValues.includes(normalized)) return "video";
+    if (imageValues.includes(normalized)) return "image";
+    if (pdfValues.includes(normalized)) return "pdf";
+    if (normalized === "youtube" || /youtube|youtu\.be/.test(url)) return "youtube";
+    if (/\.(mp3|wav|ogg|m4a)$/i.test(url)) return "audio";
+    if (/\.(mp4|mov|webm)$/i.test(url)) return "video";
+    if (/\.(pdf|doc|docx|txt|rtf|odt)$/i.test(url)) return "pdf";
+    if (/\.(jpg|jpeg|png|gif|webp|bmp|svg)$/i.test(url)) return "image";
+    return normalized || "image";
+  }
+
+  const fileType = normalizeMediaType(work.file_type || (work.youtube_url ? "youtube" : "image"), fileUrl);
   let mediaHtml = "";
   if (fileType === "video" && fileUrl) {
     mediaHtml = `<video src="${fileUrl}" controls></video>`;
   } else if (fileType === "audio" && fileUrl) {
-    mediaHtml = `<audio src="${fileUrl}" controls style="width:100%;"></audio>`;
+    mediaHtml = `
+      <div class="audio-mini-player">
+        <div class="audio-mini-meta">
+          <span>Áudio</span>
+          <strong>${(work.title || "Arquivo de áudio").replace(/</g, "&lt;").replace(/>/g, "&gt;")}</strong>
+        </div>
+        <audio src="${fileUrl}" controls preload="metadata" playsinline></audio>
+      </div>
+    `;
   } else if (fileType === "youtube" && work.youtube_url) {
     const m = work.youtube_url.match(/(?:youtu\.be\/|v=)([\w-]+)/);
     const embed = m ? `https://www.youtube.com/embed/${m[1]}` : work.youtube_url;

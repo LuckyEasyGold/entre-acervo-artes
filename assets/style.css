@@ -3390,6 +3390,40 @@ nav a.active::after {
   border-radius: 14px;
   display: block;
 }
+.audio-mini-player {
+  display: grid;
+  gap: 10px;
+  background: #f7f3ff;
+  border: 1px solid rgba(91, 61, 167, 0.16);
+  border-radius: 16px;
+  padding: 16px;
+  box-shadow: 0 8px 24px rgba(19, 15, 36, 0.08);
+}
+.audio-mini-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.audio-mini-meta strong {
+  max-width: 60%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--ink);
+  letter-spacing: normal;
+  text-transform: none;
+  font-size: 14px;
+}
+.audio-mini-player audio {
+  width: 100%;
+  display: block;
+}
 .obra-meta h1 {
   font-size: clamp(32px, 4vw, 56px);
   font-family: var(--serif);

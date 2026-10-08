@@ -14,13 +14,15 @@ function findArtist(id) {
 function getWorkTypeKey(work) {
   if (!work) return "";
   const raw = String(work.file_type || "").trim().toLowerCase();
-  if (raw) return raw;
   const url = String(work.file_url || work.image || work.image_url || "").toLowerCase();
   if (work.youtube_url) return "video";
+  if (["audio", "mp3", "wav", "ogg", "m4a"].includes(raw)) return "audio";
+  if (["video", "mp4", "mov", "webm"].includes(raw)) return "video";
   if (/\.(pdf|doc|docx|txt|rtf|odt)$/i.test(url)) return "document";
   if (/\.(mp3|wav|ogg|m4a)$/i.test(url)) return "audio";
   if (/\.(mp4|mov|webm)$/i.test(url)) return "video";
   if (/\.(jpg|jpeg|png|gif|webp|bmp|svg)$/i.test(url)) return "image";
+  if (raw) return raw;
   return "";
 }
 
