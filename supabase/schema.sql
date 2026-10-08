@@ -161,5 +161,7 @@ INSERT INTO public.categories (name, slug) VALUES
   ('TCC', 'tcc'),
   ('Artigo', 'artigo'),
   ('Instalação', 'instalacao'),
-  ('Arte Digital', 'arte-digital')
+  ('Arte Digital', 'arte-digital'),
+  ('Colagem', 'colagem'),
+  ('Outros', 'outros')
 ON CONFLICT (name) DO NOTHING;

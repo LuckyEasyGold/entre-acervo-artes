@@ -11,6 +11,78 @@
   let works = [];
   let currentSection = "profile";
 
+  const DEFAULT_CATEGORY_OPTIONS = [
+    { name: "Artes Visuais", slug: "visual" },
+    { name: "Fotografia", slug: "foto" },
+    { name: "Pintura", slug: "pintura" },
+    { name: "Desenho", slug: "desenho" },
+    { name: "Escultura", slug: "escultura" },
+    { name: "Documentário", slug: "documentario" },
+    { name: "Videoarte", slug: "video-arte" },
+    { name: "Dança", slug: "danca" },
+    { name: "Música", slug: "musica" },
+    { name: "Teatro", slug: "teatro" },
+    { name: "Performance", slug: "performance" },
+    { name: "Lipsync", slug: "lipsync" },
+    { name: "Literatura", slug: "literatura" },
+    { name: "Publicação", slug: "publicacao" },
+    { name: "TCC", slug: "tcc" },
+    { name: "Artigo", slug: "artigo" },
+    { name: "Instalação", slug: "instalacao" },
+    { name: "Arte Digital", slug: "arte-digital" },
+    { name: "Colagem", slug: "colagem" },
+    { name: "Outros", slug: "outros" }
+  ];
+
+  function normalizeCategoryValue(value) {
+    return String(value || "")
+      .trim()
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-+|-+$/g, "");
+  }
+
+  async function loadCategoryOptions() {
+    const supabase = window.supabaseClient;
+
+    if (supabase) {
+      try {
+        const { data, error } = await supabase
+          .from("categories")
+          .select("name, slug")
+          .order("name", { ascending: true });
+
+        if (!error && Array.isArray(data) && data.length) {
+          return data
+            .filter(item => item && (item.name || item.slug))
+            .map(item => ({
+              name: item.name || item.slug,
+              slug: item.slug || item.name
+            }));
+        }
+
+        if (error) {
+          console.warn("[perfil] categorias do banco indisponíveis:", error.message || error);
+        }
+      } catch (err) {
+        console.warn("[perfil] falha ao carregar categorias:", err);
+      }
+    }
+
+    return DEFAULT_CATEGORY_OPTIONS;
+  }
+
+  function renderCategoryOptions(selectedValue = "", categories = DEFAULT_CATEGORY_OPTIONS) {
+    return categories
+      .map(({ name, slug }) => {
+        const selected = normalizeCategoryValue(selectedValue) === normalizeCategoryValue(slug) ? "selected" : "";
+        return `<option value="${escapeHtml(String(slug))}" ${selected}>${escapeHtml(String(name))}</option>`;
+      })
+      .join("");
+  }
+
   function normalizeRole(value) {
     return String(value || "")
       .trim()
@@ -251,11 +323,13 @@
       });
     }
 
-  function renderPublish(container) {
+  async function renderPublish(container) {
     if (!artist || !artist.id) {
       container.innerHTML = `<div class="perfil-section"><p>Você precisa completar seu perfil antes de publicar.</p></div>`;
       return;
     }
+
+    const categoryOptions = await loadCategoryOptions();
 
     container.innerHTML = `
       <div class="perfil-section">
@@ -267,20 +341,7 @@
           <label><span>Título</span><input type="text" id="work-title" required></label>
           <label><span>Categoria</span>
             <select id="work-category">
-              <option value="foto">Fotografia</option>
-              <option value="pintura">Pintura</option>
-              <option value="desenho">Desenho</option>
-              <option value="escultura">Escultura</option>
-              <option value="documentario">Documentário</option>
-              <option value="video-arte">Videoarte</option>
-              <option value="danca">Dança</option>
-              <option value="musica">Música</option>
-              <option value="teatro">Teatro</option>
-              <option value="performance">Performance</option>
-              <option value="lipsync">Lipsync</option>
-              <option value="literatura">Literatura</option>
-              <option value="publicacao">Publicação</option>
-              <option value="tcc">TCC</option>
+              ${renderCategoryOptions("", categoryOptions)}
             </select>
           </label>
           <label><span>Ano</span><input type="number" id="work-year" value="${new Date().getFullYear()}"></label>
@@ -399,7 +460,8 @@
     });
   }
 
-  function renderWorks(container) {
+  async function renderWorks(container) {
+    const categoryOptions = await loadCategoryOptions();
     const list = (works || []).map(w => `
       <article class="perfil-work" data-id="${w.id}">
         <img src="${escapeHtml(w.image || w.file_url || '')}" alt="${escapeHtml(w.title || '')}">
@@ -414,20 +476,7 @@
             <label><span>Título</span><input type="text" name="title" value="${escapeHtml(w.title || '')}" required></label>
             <label><span>Categoria</span>
               <select name="category">
-                <option value="foto" ${w.category === 'foto' ? 'selected' : ''}>Fotografia</option>
-                <option value="pintura" ${w.category === 'pintura' ? 'selected' : ''}>Pintura</option>
-                <option value="desenho" ${w.category === 'desenho' ? 'selected' : ''}>Desenho</option>
-                <option value="escultura" ${w.category === 'escultura' ? 'selected' : ''}>Escultura</option>
-                <option value="documentario" ${w.category === 'documentario' ? 'selected' : ''}>Documentário</option>
-                <option value="video-arte" ${w.category === 'video-arte' ? 'selected' : ''}>Videoarte</option>
-                <option value="danca" ${w.category === 'danca' ? 'selected' : ''}>Dança</option>
-                <option value="musica" ${w.category === 'musica' ? 'selected' : ''}>Música</option>
-                <option value="teatro" ${w.category === 'teatro' ? 'selected' : ''}>Teatro</option>
-                <option value="performance" ${w.category === 'performance' ? 'selected' : ''}>Performance</option>
-                <option value="lipsync" ${w.category === 'lipsync' ? 'selected' : ''}>Lipsync</option>
-                <option value="literatura" ${w.category === 'literatura' ? 'selected' : ''}>Literatura</option>
-                <option value="publicacao" ${w.category === 'publicacao' ? 'selected' : ''}>Publicação</option>
-                <option value="tcc" ${w.category === 'tcc' ? 'selected' : ''}>TCC</option>
+                ${renderCategoryOptions(w.category || "", categoryOptions)}
               </select>
             </label>
             <label><span>Ano</span><input type="number" name="year" value="${w.year || new Date().getFullYear()}"></label>
