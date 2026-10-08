@@ -2512,11 +2512,18 @@ nav a.active::after {
 }
 
 .discipline-actions,
-.discipline-editor-actions {
+.discipline-editor-actions,
+.work-actions,
+.work-editor-actions {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
   margin-top: 12px;
+}
+
+.work-editor {
+  border-top: 1px solid var(--line);
+  padding-top: 12px;
 }
 
 .action-btn {

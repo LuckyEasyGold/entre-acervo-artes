@@ -389,10 +389,52 @@
         <div>
           <strong>${escapeHtml(w.title || '')}</strong>
           <small>${w.category || ''} · ${w.year || ''} · ${w.status || ''} · ${w.visibility || ''}</small>
-          <div style="margin-top:10px; display:flex; gap:8px; flex-wrap:wrap;">
-            <button type="button" class="btn btn-sm btn-dark edit-work" data-id="${w.id}">Editar</button>
-            <button type="button" class="btn btn-sm btn-outline delete-work" data-id="${w.id}">Excluir</button>
+          <div class="work-actions">
+            <button type="button" class="action-btn edit-disc edit-work" data-id="${w.id}">Editar</button>
+            <button type="button" class="action-btn delete-disc delete-work" data-id="${w.id}">Excluir</button>
           </div>
+          <form class="perfil-form work-editor" data-id="${w.id}" style="display:none; margin-top:16px;">
+            <label><span>Título</span><input type="text" name="title" value="${escapeHtml(w.title || '')}" required></label>
+            <label><span>Categoria</span>
+              <select name="category">
+                <option value="foto" ${w.category === 'foto' ? 'selected' : ''}>Fotografia</option>
+                <option value="pintura" ${w.category === 'pintura' ? 'selected' : ''}>Pintura</option>
+                <option value="desenho" ${w.category === 'desenho' ? 'selected' : ''}>Desenho</option>
+                <option value="escultura" ${w.category === 'escultura' ? 'selected' : ''}>Escultura</option>
+                <option value="documentario" ${w.category === 'documentario' ? 'selected' : ''}>Documentário</option>
+                <option value="video-arte" ${w.category === 'video-arte' ? 'selected' : ''}>Videoarte</option>
+                <option value="danca" ${w.category === 'danca' ? 'selected' : ''}>Dança</option>
+                <option value="musica" ${w.category === 'musica' ? 'selected' : ''}>Música</option>
+                <option value="teatro" ${w.category === 'teatro' ? 'selected' : ''}>Teatro</option>
+                <option value="performance" ${w.category === 'performance' ? 'selected' : ''}>Performance</option>
+                <option value="lipsync" ${w.category === 'lipsync' ? 'selected' : ''}>Lipsync</option>
+                <option value="literatura" ${w.category === 'literatura' ? 'selected' : ''}>Literatura</option>
+                <option value="publicacao" ${w.category === 'publicacao' ? 'selected' : ''}>Publicação</option>
+                <option value="tcc" ${w.category === 'tcc' ? 'selected' : ''}>TCC</option>
+              </select>
+            </label>
+            <label><span>Ano</span><input type="number" name="year" value="${w.year || new Date().getFullYear()}"></label>
+            <label><span>Descrição</span><textarea name="description" rows="3">${escapeHtml(w.description || '')}</textarea></label>
+            <label><span>Link da imagem</span><input type="url" name="image" value="${escapeHtml(w.image || w.file_url || '')}"></label>
+            <label><span>Link do YouTube</span><input type="url" name="youtube_url" value="${escapeHtml(w.youtube_url || '')}"></label>
+            <label><span>Arquivo (opcional)</span><input type="file" name="file" accept="image/*,video/*,.pdf"></label>
+            <label><span>Visibilidade</span>
+              <select name="visibility">
+                <option value="public" ${w.visibility === 'public' ? 'selected' : ''}>Pública</option>
+                <option value="private" ${w.visibility === 'private' ? 'selected' : ''}>Privada</option>
+              </select>
+            </label>
+            <label><span>Status</span>
+              <select name="status">
+                <option value="draft" ${w.status === 'draft' ? 'selected' : ''}>Rascunho</option>
+                <option value="published" ${w.status === 'published' ? 'selected' : ''}>Publicado</option>
+              </select>
+            </label>
+            <div class="work-editor-actions">
+              <button type="submit" class="action-btn save-disc">Salvar</button>
+              <button type="button" class="action-btn cancel-edit work-cancel">Cancelar</button>
+            </div>
+          </form>
         </div>
       </article>
     `).join("") || '<p class="muted">Nenhuma obra cadastrada.</p>';
@@ -427,24 +469,65 @@
     });
 
     container.querySelectorAll(".edit-work").forEach(button => {
-      button.addEventListener("click", async () => {
-        const workId = button.dataset.id;
+      button.addEventListener("click", () => {
+        const card = button.closest(".perfil-work");
+        const form = card ? card.querySelector(".work-editor") : null;
+        if (!form) return;
+        form.style.display = form.style.display === "none" ? "block" : "none";
+      });
+    });
+
+    container.querySelectorAll(".work-cancel").forEach(button => {
+      button.addEventListener("click", () => {
+        const form = button.closest(".work-editor");
+        if (form) form.style.display = "none";
+      });
+    });
+
+    container.querySelectorAll(".work-editor").forEach(form => {
+      form.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        const workId = form.dataset.id;
         const entry = (works || []).find(w => w.id === workId);
         if (!entry) return;
 
-        const nextTitle = window.prompt("Título da obra:", entry.title || "");
-        if (nextTitle === null) return;
+        const formData = new FormData(form);
+        const file = formData.get("file");
+        let file_url = entry.file_url || null;
+        let file_type = entry.file_type || null;
+        let image = (formData.get("image") || "").toString().trim() || entry.image || null;
 
-        const nextDescription = window.prompt("Descrição da obra:", entry.description || "");
-        if (nextDescription === null) return;
+        if (file && file.size > 0) {
+          const ext = file.name.split(".").pop().toLowerCase();
+          let nextType = null;
+          if (["jpg", "jpeg", "png", "gif", "webp"].includes(ext)) nextType = "image";
+          else if (["mp4", "mov", "webm"].includes(ext)) nextType = "video";
+          else if (ext === "pdf") nextType = "pdf";
 
-        const nextYear = window.prompt("Ano da obra:", String(entry.year || new Date().getFullYear()));
-        if (nextYear === null) return;
+          const path = `${artist.id}/${Date.now()}_${file.name}`;
+          const { error: upErr } = await window.supabaseClient.storage.from("works").upload(path, file);
+          if (upErr) {
+            alert("Erro ao enviar o arquivo: " + upErr.message);
+            return;
+          }
+
+          const { data: { publicUrl } } = window.supabaseClient.storage.from("works").getPublicUrl(path);
+          file_url = publicUrl;
+          file_type = nextType;
+          image = image || publicUrl;
+        }
 
         const payload = {
-          title: nextTitle.trim() || entry.title,
-          description: nextDescription.trim() || entry.description,
-          year: Number(nextYear) || entry.year || new Date().getFullYear(),
+          title: (formData.get("title") || "").toString().trim() || entry.title,
+          category: (formData.get("category") || entry.category || "foto").toString(),
+          year: Number(formData.get("year") || entry.year || new Date().getFullYear()),
+          description: (formData.get("description") || "").toString().trim() || entry.description,
+          image: image || file_url || entry.image || null,
+          youtube_url: (formData.get("youtube_url") || "").toString().trim() || null,
+          file_url: file_url || entry.file_url || null,
+          file_type: file_type || entry.file_type || null,
+          visibility: (formData.get("visibility") || entry.visibility || "public").toString(),
+          status: (formData.get("status") || entry.status || "draft").toString(),
           updated_at: new Date().toISOString()
         };
 
