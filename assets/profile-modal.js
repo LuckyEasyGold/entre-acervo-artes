@@ -106,7 +106,15 @@ function renderCurriculo(artist) {
 
 function renderProducoes(artist) {
   if (!isAdvisorArtist(artist)) return "";
-  const prods = artist.academicProductions || [];
+  const works = findWorksFor(artist);
+  const prods = Array.isArray(artist.academicProductions) && artist.academicProductions.length ? artist.academicProductions : works.map(w => ({
+    type: (w.file_type || '').toUpperCase() || 'PUBLICAÇÃO',
+    title: w.title,
+    publisher: w.category || 'Acervo',
+    journal: '',
+    year: w.year
+  }));
+
   if (!prods.length) {
     return `
       <div class="tab-pane" data-pane="producoes">
@@ -116,13 +124,13 @@ function renderProducoes(artist) {
   }
   return `
     <div class="tab-pane" data-pane="producoes">
-      <p class="eyebrow">PRODUÇÕES ACADÊMICAS</p>
+      <p class="eyebrow">PRODUÇÕES ACADÊMICAS · ${prods.length}</p>
       <ul class="productions-list">
         ${prods.map(p => `
           <li>
-            <span class="prod-type">${(p.type || '').toUpperCase()}</span>
+            <span class="prod-type">${(p.type || 'PUBLICAÇÃO').toString().toUpperCase()}</span>
             <div>
-              <strong>${p.title}</strong>
+              <strong>${p.title || 'Produção'}</strong>
               <small>${[p.publisher, p.journal, p.year].filter(Boolean).join(' · ')}</small>
             </div>
           </li>`).join("")}
@@ -170,16 +178,22 @@ function renderAcervo(artist) {
     <div class="tab-pane" data-pane="acervo">
       <p class="eyebrow">ACERVO · ${works.length} ${works.length === 1 ? 'obra' : 'obras'}</p>
       <div class="acervo-grid">
-        ${works.map(w => `
-          <article class="work profile-work">
-            <div class="visual"><img src="${w.image || w.file_url || w.image_url || ''}" alt="${w.title}" loading="lazy"></div>
-            <div class="work-info">
-              <div>
-                <div class="work-title">${w.title}</div>
-                <small>${w.year || ''} · ${w.category || ''}</small>
+        ${works.map(w => {
+          const isPdf = (w.file_type || '').toLowerCase() === 'pdf' || String(w.file_url || '').toLowerCase().endsWith('.pdf');
+          const visual = isPdf
+            ? '<div class="visual pdf-visual"><span>PDF</span></div>'
+            : `<div class="visual"><img src="${w.image || w.file_url || w.image_url || ''}" alt="${w.title}" loading="lazy"></div>`;
+          return `
+            <article class="work profile-work">
+              ${visual}
+              <div class="work-info">
+                <div>
+                  <div class="work-title">${w.title}</div>
+                  <small>${w.year || ''} · ${w.category || ''}</small>
+                </div>
               </div>
-            </div>
-          </article>`).join("")}
+            </article>`;
+        }).join("")}
       </div>
     </div>`;
 }

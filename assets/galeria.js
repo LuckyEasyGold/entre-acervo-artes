@@ -58,9 +58,13 @@ function render() {
       const artist = allArtists.find(a => a.id === artistId);
       const artistName = artist ? artist.name : (w.artists?.name || "—");
       const img = w.image || w.image_url || w.file_url || "";
+      const isPdf = String(w.file_type || "").toLowerCase() === "pdf" || String(w.file_url || "").toLowerCase().endsWith(".pdf");
+      const visual = isPdf
+        ? '<div class="visual pdf-visual"><span>PDF</span></div>'
+        : `<div class="visual"><img src="${img}" alt="${w.title}" loading="lazy"></div>`;
       return `
         <article class="work" data-work-id="${w.id}">
-          <div class="visual"><img src="${img}" alt="${w.title}" loading="lazy"></div>
+          ${visual}
           <div class="work-info">
             <div>
               <div class="work-title">${w.title}</div>

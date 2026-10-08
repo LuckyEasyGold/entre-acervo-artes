@@ -979,6 +979,28 @@ nav a:hover::after { width: 100%; }
   overflow: hidden;
   box-shadow: var(--shadow-md);
 }
+.pdf-visual {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  aspect-ratio: 1 / 1;
+  background: linear-gradient(135deg, rgba(18, 18, 18, 0.95), rgba(67, 70, 76, 0.88));
+  color: var(--paper);
+  font: 700 12px var(--mono);
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  border: 1px solid rgba(255,255,255,0.14);
+}
+.pdf-visual span {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 64px;
+  height: 64px;
+  border-radius: 16px;
+  border: 1px solid rgba(255,255,255,0.22);
+  background: rgba(255,255,255,0.06);
+}
 .profile-nav {
   display: flex;
   justify-content: flex-start;
