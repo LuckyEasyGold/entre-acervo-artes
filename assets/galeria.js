@@ -46,7 +46,8 @@ function render() {
 
   if (grid) {
     grid.innerHTML = filtered.map(w => {
-      const artist = allArtists.find(a => a.id === (w.artistId || w.artists?.id));
+      const artistId = w.artist_id || w.artistId || w.artists?.id || w.artist?.id;
+      const artist = allArtists.find(a => a.id === artistId);
       const artistName = artist ? artist.name : (w.artists?.name || "—");
       const img = w.image || w.image_url || w.file_url || "";
       return `
@@ -66,7 +67,8 @@ function render() {
       el.addEventListener("click", () => {
         const workId = el.dataset.workId;
         const work = allWorks.find(w => w.id === workId);
-        const artist = allArtists.find(a => a.id === (work?.artistId || work?.artists?.id));
+        const artistId = work?.artist_id || work?.artistId || work?.artists?.id || work?.artist?.id;
+        const artist = allArtists.find(a => a.id === artistId);
         const artistName = artist ? artist.name : (work?.artists?.name || "");
         if (work && typeof window.openProtectedLightbox === "function") {
           window.openProtectedLightbox(work, artistName);

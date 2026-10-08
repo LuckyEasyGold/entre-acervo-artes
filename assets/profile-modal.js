@@ -13,8 +13,8 @@ function findArtist(id) {
 
 function findWorksFor(artist) {
   return allWorks.filter(w => {
-    if (w.artistId && w.artistId === artist.id) return true;
-    if (w.artists && w.artists.id === artist.id) return true;
+    const workArtistId = w.artist_id || w.artistId || (w.artists && w.artists.id) || (w.artist && w.artist.id);
+    if (workArtistId && workArtistId === artist.id) return true;
     if (artist.works && Array.isArray(artist.works) && artist.works.includes(w.id)) return true;
     return false;
   });
