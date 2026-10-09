@@ -65,20 +65,37 @@
     return normalized || "image";
   }
 
+  function createAudioMiniPlayer(trackUrl, title) {
+    const safeTitle = String(title || "Arquivo de áudio")
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/\"/g, "&quot;");
+
+    return `
+      <div class="audio-mini-player">
+        <div class="audio-mini-meta">
+          <span>Áudio</span>
+          <strong>${safeTitle}</strong>
+        </div>
+        <div class="audio-mini-controls">
+          <button type="button" class="audio-mini-button" aria-label="Reproduzir ou pausar áudio">▶</button>
+          <div class="audio-mini-progress-wrap">
+            <input class="audio-mini-slider" type="range" min="0" max="100" value="0" aria-label="Progresso do áudio">
+          </div>
+          <span class="audio-mini-time">0:00</span>
+        </div>
+        <audio class="audio-hidden-player" src="${trackUrl}" preload="metadata" playsinline></audio>
+      </div>
+    `;
+  }
+
   const fileType = normalizeMediaType(work.file_type || (work.youtube_url ? "youtube" : "image"), fileUrl);
   let mediaHtml = "";
   if (fileType === "video" && fileUrl) {
     mediaHtml = `<video src="${fileUrl}" controls></video>`;
   } else if (fileType === "audio" && fileUrl) {
-    mediaHtml = `
-      <div class="audio-mini-player">
-        <div class="audio-mini-meta">
-          <span>Áudio</span>
-          <strong>${(work.title || "Arquivo de áudio").replace(/</g, "&lt;").replace(/>/g, "&gt;")}</strong>
-        </div>
-        <audio src="${fileUrl}" controls preload="metadata" playsinline></audio>
-      </div>
-    `;
+    mediaHtml = createAudioMiniPlayer(fileUrl, work.title || "Arquivo de áudio");
   } else if (fileType === "youtube" && work.youtube_url) {
     const m = work.youtube_url.match(/(?:youtu\.be\/|v=)([\w-]+)/);
     const embed = m ? `https://www.youtube.com/embed/${m[1]}` : work.youtube_url;
@@ -105,6 +122,61 @@
         </div>
       </article>
     `;
+
+    const audioPlayer = main.querySelector('.audio-hidden-player');
+    const playBtn = main.querySelector('.audio-mini-button');
+    const slider = main.querySelector('.audio-mini-slider');
+    const timeEl = main.querySelector('.audio-mini-time');
+
+    if (audioPlayer && playBtn && slider && timeEl) {
+      const updateTimeLabel = (seconds) => {
+        const minutes = Math.floor(seconds / 60);
+        const secs = Math.floor(seconds % 60);
+        timeEl.textContent = `${minutes}:${String(secs).padStart(2, '0')}`;
+      };
+
+      playBtn.addEventListener('click', async () => {
+        if (audioPlayer.paused) {
+          try {
+            await audioPlayer.play();
+            playBtn.textContent = '❚❚';
+          } catch (error) {
+            console.warn('[obra] erro ao reproduzir áudio', error);
+          }
+        } else {
+          audioPlayer.pause();
+          playBtn.textContent = '▶';
+        }
+      });
+
+      audioPlayer.addEventListener('play', () => {
+        playBtn.textContent = '❚❚';
+      });
+
+      audioPlayer.addEventListener('pause', () => {
+        playBtn.textContent = '▶';
+      });
+
+      audioPlayer.addEventListener('loadedmetadata', () => {
+        const duration = Number.isFinite(audioPlayer.duration) && audioPlayer.duration > 0 ? audioPlayer.duration : 0;
+        slider.max = String(duration || 100);
+        updateTimeLabel(audioPlayer.currentTime || 0);
+      });
+
+      audioPlayer.addEventListener('timeupdate', () => {
+        const duration = Number.isFinite(audioPlayer.duration) && audioPlayer.duration > 0 ? audioPlayer.duration : 100;
+        slider.value = String(audioPlayer.currentTime || 0);
+        slider.max = String(duration || 100);
+        updateTimeLabel(audioPlayer.currentTime || 0);
+      });
+
+      slider.addEventListener('input', () => {
+        const duration = Number.isFinite(audioPlayer.duration) && audioPlayer.duration > 0 ? audioPlayer.duration : 0;
+        const target = duration ? (Number(slider.value) / duration) * audioPlayer.duration : 0;
+        audioPlayer.currentTime = target;
+        updateTimeLabel(audioPlayer.currentTime || 0);
+      });
+    }
 
     const authorLink = main.querySelector("[data-artist-id]");
     if (authorLink) {

@@ -3392,26 +3392,26 @@ nav a.active::after {
 }
 .audio-mini-player {
   display: grid;
-  gap: 10px;
-  background: #f7f3ff;
-  border: 1px solid rgba(91, 61, 167, 0.16);
-  border-radius: 16px;
-  padding: 16px;
-  box-shadow: 0 8px 24px rgba(19, 15, 36, 0.08);
+  gap: 12px;
+  background: linear-gradient(135deg, #f7f3ff 0%, #efe7ff 100%);
+  border: 1px solid rgba(91, 61, 167, 0.18);
+  border-radius: 18px;
+  padding: 16px 18px;
+  box-shadow: 0 12px 28px rgba(53, 35, 98, 0.12);
 }
 .audio-mini-meta {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--muted);
 }
 .audio-mini-meta strong {
-  max-width: 60%;
+  max-width: 62%;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -3420,9 +3420,41 @@ nav a.active::after {
   text-transform: none;
   font-size: 14px;
 }
-.audio-mini-player audio {
-  width: 100%;
+.audio-mini-controls {
+  display: grid;
+  grid-template-columns: 46px 1fr auto;
+  align-items: center;
+  gap: 12px;
+}
+.audio-mini-button {
+  width: 46px;
+  height: 46px;
+  border: none;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #201d36 0%, #6e4ad6 100%);
+  color: #fff;
+  font-size: 18px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 8px 18px rgba(110, 74, 214, 0.35);
+}
+.audio-mini-progress-wrap {
   display: block;
+}
+.audio-mini-slider {
+  width: 100%;
+  accent-color: #6e4ad6;
+  cursor: pointer;
+}
+.audio-mini-time {
+  min-width: 40px;
+  text-align: right;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--ink);
+}
+.audio-hidden-player {
+  display: none;
 }
 .obra-meta h1 {
   font-size: clamp(32px, 4vw, 56px);
