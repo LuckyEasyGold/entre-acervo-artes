@@ -18,7 +18,7 @@
     try {
       const { data, error } = await supabase
         .from("works")
-        .select("*, artists(name, image)")
+        .select("*, artists!works_artist_id_fkey(name, image)")
         .eq("status", "published")
         .limit(50);
       if (!error && Array.isArray(data) && data.length) works = data;
@@ -46,14 +46,28 @@
   const grid = document.getElementById("preview-grid");
   if (grid && shuffled.length) {
     grid.innerHTML = shuffled.map(w => `
-      <a class="preview-card" href="obra.html?id=${w.id}">
+      <button class="preview-card" type="button" data-work-id="${w.id}" aria-label="Abrir obra ${w.title}">
         <div class="visual"><img src="${w.image || w.image_url || ''}" alt="${w.title}" loading="lazy"></div>
         <div class="preview-info">
           <div class="work-title">${w.title}</div>
           <small>${w.artists ? w.artists.name : ''} · ${w.year || ''}</small>
         </div>
-      </a>
+      </button>
     `).join("");
+
+    grid.querySelectorAll(".preview-card").forEach(button => {
+      button.addEventListener("click", () => {
+        const workId = button.dataset.workId;
+        const work = shuffled.find(item => item.id === workId);
+        if (!work) return;
+
+        if (typeof window.openProtectedLightbox === "function") {
+          window.openProtectedLightbox(work, work.artists?.name || "");
+        } else {
+          window.location.href = "obra.html?id=" + encodeURIComponent(work.id);
+        }
+      });
+    });
   } else if (grid) {
     grid.innerHTML = "<p style='color:var(--muted);font-size:14px;'>Nenhuma obra publicada ainda.</p>";
   }

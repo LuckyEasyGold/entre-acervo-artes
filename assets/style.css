@@ -3567,8 +3567,16 @@ nav a.active::after {
   border-radius: 12px;
   display: block;
   margin: 0 auto;
-  pointer-events: none;
   user-select: none;
+}
+/* A proteção contra clique/arraste vale só para a imagem. O vídeo precisa
+   receber cliques para os controles nativos (play/pause/tela cheia) e para
+   o gesto de iniciar a reprodução. */
+.protected-media img {
+  pointer-events: none;
+}
+.protected-media video {
+  pointer-events: auto;
 }
 .watermark {
   position: absolute;

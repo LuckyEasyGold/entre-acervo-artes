@@ -2,13 +2,23 @@
 // ENTRE — Página individual de obra
 // ============================================
 
+async function waitForSupabaseClient(maxAttempts = 30) {
+  for (let attempt = 0; attempt < maxAttempts; attempt += 1) {
+    if (window.supabaseClient) return window.supabaseClient;
+    await new Promise(resolve => setTimeout(resolve, 200));
+  }
+  return window.supabaseClient || null;
+}
+
 (async () => {
   const params = new URLSearchParams(window.location.search);
   const id = params.get("id");
   const main = document.getElementById("obra-main");
   if (!id || !main) return;
 
-  const supabase = window.supabaseClient;
+  // O cliente é criado de forma assíncrona em supabase.js; esperar aqui
+  // evita cair no fallback de /data/works.json e mostrar "Obra não encontrada".
+  const supabase = await waitForSupabaseClient();
   let work = null;
   let artist = null;
   let allArtists = [];
@@ -18,7 +28,9 @@
     try {
       const { data } = await supabase
         .from("works")
-        .select("*, artists(*)")
+        // works tem 3 FKs para artists (artist_id, advisor_id, reviewed_by);
+        // sem o hint o PostgREST devolve PGRST201 e a obra nunca é encontrada.
+        .select("*, artists!works_artist_id_fkey(*)")
         .eq("id", id)
         .single();
       if (data) {
@@ -93,7 +105,7 @@
   const fileType = normalizeMediaType(work.file_type || (work.youtube_url ? "youtube" : "image"), fileUrl);
   let mediaHtml = "";
   if (fileType === "video" && fileUrl) {
-    mediaHtml = `<video src="${fileUrl}" controls></video>`;
+    mediaHtml = `<video src="${fileUrl}" controls playsinline preload="metadata"></video>`;
   } else if (fileType === "audio" && fileUrl) {
     mediaHtml = createAudioMiniPlayer(fileUrl, work.title || "Arquivo de áudio");
   } else if (fileType === "youtube" && work.youtube_url) {

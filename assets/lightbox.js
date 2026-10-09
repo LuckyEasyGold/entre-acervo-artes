@@ -100,7 +100,7 @@
     if (youtube) {
       html += `<iframe src="${youtube}" allow="autoplay; encrypted-media" allowfullscreen style="width:100%;aspect-ratio:16/9;border:none;border-radius:12px;"></iframe>`;
     } else if (fileType === "video" && fileUrl) {
-      html += `<video src="${fileUrl}" controls style="width:100%;border-radius:12px;background:#000;"></video>`;
+      html += `<video src="${fileUrl}" controls playsinline preload="metadata" style="width:100%;border-radius:12px;background:#000;"></video>`;
     } else if (fileType === "audio" && fileUrl) {
       html += createAudioMiniPlayer(fileUrl, title);
     } else if (fileType === "pdf" && fileUrl) {
